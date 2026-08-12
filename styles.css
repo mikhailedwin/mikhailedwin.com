@@ -35,15 +35,15 @@ body.surv-page:active { cursor: grabbing; }
 @media (max-width: 600px){.surv-panel { min-width: 0px; padding: 8px 10px 10px; }.surv-panel.surv-tl { top: 46px; left: 8px; max-width: calc(-14px + 50vw); }.surv-panel.surv-tr { top: 46px; right: 8px; max-width: calc(-14px + 50vw); }.surv-panel.surv-bl { display: none; }.surv-panel.surv-br { bottom: 40px; left: 8px; right: 8px; max-width: none; }.surv-panel.surv-br .sp-row { gap: 10px; }.sp-row { font-size: 10px; line-height: 1.85; gap: 8px; }.sp-title { font-size: 8px; }.surv-top { padding: 10px 12px; }.surv-top-left span { font-size: 9px; }.surv-back { font-size: 9px; bottom: 14px; }}
 a:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline: 1px solid var(--cyan); outline-offset: 3px; }
 @view-transition { navigation: auto; }
-::view-transition-old(root) { animation: 0.2s ease-in 0s 1 normal forwards running vt-collapse; }
-::view-transition-new(root) { animation: 0.24s ease-out 0s 1 normal none running vt-expand; }
-@keyframes vt-collapse { 
-  60% { opacity: 1; }
-  100% { transform: scaleY(0.004); filter: brightness(2.4) saturate(1.6); opacity: 0.9; }
+::view-transition-old(root) { animation: .2s cubic-bezier(.45,0,.9,.35) both vt-collapse; }
+::view-transition-new(root) { animation: .34s cubic-bezier(.16,1,.3,1) both vt-expand; }
+@keyframes vt-collapse {
+  to { transform: scale(1.22); opacity: 0; filter: blur(3px) brightness(1.3); }
 }
-@keyframes vt-expand { 
-  0% { transform: scaleY(0.004); filter: brightness(2.4) saturate(1.6); }
-  100% { transform: scaleY(1); filter: none; }
+@keyframes vt-expand {
+  from { transform: scale(1.07); opacity: 0; filter: blur(2px); }
+  to   { transform: scale(1);    opacity: 1; filter: none; }
+}
 }
 body::before { background-image: linear-gradient(var(--grid) 1px, transparent 1px),
     linear-gradient(90deg, var(--grid) 1px, transparent 1px),

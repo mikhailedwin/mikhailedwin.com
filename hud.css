@@ -39,7 +39,7 @@
   --lm-1:  rgba(193, 255, 58, .92);
   --lm-2:  rgba(193, 255, 58, .70);
   --mg-1:  rgba(255, 45, 146, .92);
-  --mg-2:  rgba(255, 45, 146, .68);
+  --mg-2:  rgba(255, 45, 146, .88);
 
   --text:    #e8e8f2;
   --line:    rgba(0, 240, 255, 0.15);
@@ -261,18 +261,18 @@ body::after {
 .ln { font-size: 9px; letter-spacing: .05em; color: var(--cy-2); white-space: nowrap; line-height: 1.5; }
 .ln .ts { color: var(--am-2); }
 .ln .s { color: var(--text); }
-.ln .bin  { color: rgba(0,240,255,.42); letter-spacing: .02em; }
+.ln .bin  { color: rgba(0,240,255,.58); letter-spacing: .02em; }
 .ln .code { color: var(--cy-2); letter-spacing: .01em; text-transform: none; }
 .ln .code .c-k { color: var(--am-2); }
 .ln .code .c-f { color: var(--cy-1); }
 .ln .code .c-n { color: var(--lm-2); }
-.ln .code .c-c { color: rgba(0,240,255,.32); }
+.ln .code .c-c { color: rgba(0,240,255,.56); }
 /* shell work: a lime prompt, the binary in cyan, flags dimmed back so
    the eye lands on what is actually being run */
 .ln .sh { color: var(--cy-2); letter-spacing: .01em; text-transform: none; }
 .ln .sh .p  { color: var(--lm-1); }
 .ln .sh .b  { color: var(--cy-1); }
-.ln .sh .fl { color: rgba(0,240,255,.42); }
+.ln .sh .fl { color: rgba(0,240,255,.58); }
 .ln .sh .st { color: var(--am-2); }
 .ln .out    { color: rgba(193,255,58,.62); text-transform: none; letter-spacing: .01em; }
 .ln .out.bad { color: rgba(255,45,146,.72); }

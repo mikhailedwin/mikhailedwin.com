@@ -24,7 +24,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"></noscript>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="hud.css?v=9">
+<link rel="stylesheet" href="hud.css?v=10">
 <style>
 /* ── Clock ────────────────────────────────────────────────── */
 .clk { text-align: right; }
@@ -33,7 +33,7 @@
   font-variant-numeric: tabular-nums; line-height: 1;
   text-shadow: 0 0 18px rgba(255,184,0,.28);
 }
-.clk .big em { font-style: normal; color: rgba(255,184,0,.55); font-size: 15px; }
+.clk .big em { font-style: normal; color: rgba(255,184,0,.74); font-size: 15px; }
 .clk .l { color: var(--am-2); font-size: 9px; letter-spacing: .2em; margin-top: 7px; }
 .clk .l.date { color: var(--am-1); }
 
@@ -43,13 +43,9 @@
 .field:focus-visible { outline: 1px solid var(--mg-1); outline-offset: 4px; }
 
 /* Warp-through: chrome falls away as the core rushes the viewer */
-.hud { transition: opacity .2s ease-in, transform .38s cubic-bezier(.45,0,.9,.35), filter .2s ease-in; }
+.hud { transition: opacity .17s ease-in, transform .28s cubic-bezier(.45,0,.9,.35), filter .17s ease-in; }
 .hud.warping { opacity: 0; transform: scale(1.12); filter: blur(1.5px); }
 .hud.warping .field { opacity: 1; }
-#warp {
-  position: fixed; inset: 0; z-index: 90; pointer-events: none; opacity: 0;
-  background: radial-gradient(circle at 50% 50%, #eafcff 0%, var(--cyan) 42%, rgba(0,240,255,0) 78%);
-}
 .f-tag { position: absolute; bottom: 0; font-size: 9px; letter-spacing: .22em; color: var(--cy-2); pointer-events: none; }
 .f-l { left: 0; }
 .f-r { right: 0; text-align: right; }
@@ -60,8 +56,6 @@
 </style>
 </head>
 <body>
-
-<div id="warp"></div>
 
 <div class="hud">
 
@@ -926,13 +920,10 @@
     c.clearRect(0, 0, W, H);
 
     if (warping) {
-      var zp = Math.min(1, (t * 1000 - zoomT0) / 420);
+      var zp = Math.min(1, (t * 1000 - zoomT0) / 280);
       zoom = zp * zp * zp;
       R *= 1 + zoom * 22;
-      // The flash only exists to cover the swap. It arrives late and eases
-      // in rather than being held on screen for a third of a second.
-      var fl = Math.max(0, (zp - .70) / .30);
-      warpEl.style.opacity = (fl * fl * .92).toFixed(3);
+
     }
 
     camX = lerp(camX, camTX, .045);
@@ -1510,7 +1501,7 @@
   }
 
   /* ── Field interaction ───────────────────────────────────── */
-  var fieldEl = $('field'), warpEl = $('warp');
+  var fieldEl = $('field');
   function engageSeven() {
     if (warping) return;
     log('SEVEN EYES PROTOCOL / HANDING OFF', 'dn');
@@ -1518,7 +1509,7 @@
     warping = true;
     zoomT0 = performance.now();
     document.querySelector('.hud').classList.add('warping');
-    setTimeout(function () { location.href = 'seven-eyes-protocol.html'; }, 430);
+    setTimeout(function () { location.href = 'seven-eyes-protocol.html'; }, 290);
   }
   oCv.addEventListener('pointermove', function (e) {
     var r = oCv.getBoundingClientRect();
@@ -1540,7 +1531,6 @@
     psy = psyT = 0; dwell = 0; dwellOn = false;
     var hudEl = document.querySelector('.hud');
     if (hudEl) hudEl.classList.remove('warping');
-    if (warpEl) warpEl.style.opacity = 0;
   });
 
 
