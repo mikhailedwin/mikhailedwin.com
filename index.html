@@ -608,7 +608,8 @@
      ────────────────────────────────────────────────────────── */
   var psy = 0, psyT = 0, psyPeak = 0, psyHold = 0, psyNext = 10 + Math.random() * 14;
   var dwell = 0, dwellOn = false, lastHX = -9999, lastHY = -9999;
-  var pbufA = null, pbufB = null;
+  var pbufA = null, pbufB = null, maskCv = null;
+  var dimGrad = null, dimW = 0, dimH = 0, bloomTick = 0;
   var CAN_FILTER = (function () {
     try {
       var cc = document.createElement('canvas').getContext('2d');
@@ -1338,13 +1339,22 @@
      nobody can tell was cheated.
      ══════════════════════════════════════════════════════════ */
   function bloomPass(c, t, I, W, H, cx, cy) {
+    // On the bottom rung the machine is already missing frames, so the
+    // composite is rebuilt every other frame and reused in between. The
+    // effect undulates slowly enough that nobody can tell, and it stops
+    // the one thing that is meant to be a flourish from being the thing
+    // that breaks the frame budget.
     var d = Math.min(devicePixelRatio || 1, 2);
-    var SCALE = QUAL >= 3 ? .42 : QUAL === 2 ? .34 : QUAL === 1 ? .28 : .22;  // every pass pays this
+    var SCALE = QUAL >= 3 ? .42 : QUAL === 2 ? .34 : QUAL === 1 ? .28 : .18;  // every pass pays this
     var bw = Math.max(2, Math.round(W * d * SCALE)), bh = Math.max(2, Math.round(H * d * SCALE));
+    var fresh = false;
     if (!pbufA) { pbufA = document.createElement('canvas'); pbufB = document.createElement('canvas'); }
     if (pbufA.width !== bw || pbufA.height !== bh) {
       pbufA.width = bw; pbufA.height = bh; pbufB.width = bw; pbufB.height = bh;
+      fresh = true;                       // resizing a canvas wipes it
     }
+    // Reusing last frame's composite is only safe if there IS one.
+    var reuse = QUAL === 0 && !fresh && (bloomTick++ & 1) === 1;
     var ca = pbufA.getContext('2d'), cb = pbufB.getContext('2d');
     var bx = cx * (bw / W), by = cy * (bh / H);
     var RMAX = Math.hypot(bw, bh);
@@ -1355,6 +1365,7 @@
       x.globalAlpha = 1; x.filter = 'none';
     }
 
+    if (!reuse) {
     // Snapshot the clean frame.
     reset(ca); ca.clearRect(0, 0, bw, bh);
     ca.drawImage(oCv, 0, 0, oCv.width, oCv.height, 0, 0, bw, bh);
@@ -1396,7 +1407,7 @@
        Read from A, write to B: a canvas cannot safely blit into
        itself. */
     reset(ca); ca.clearRect(0, 0, bw, bh); ca.drawImage(pbufB, 0, 0);
-    var LV = QUAL === 0 ? 2 : Math.round(3 + I * 2);
+    var LV = QUAL === 0 ? 1 : Math.round(3 + I * 2);
     cb.globalCompositeOperation = 'lighter';
     for (var k = 1; k <= LV; k++) {
       var sc = Math.pow(.52, k);
@@ -1417,7 +1428,7 @@
        much and looks no different once it is glowing. */
     reset(ca); ca.clearRect(0, 0, bw, bh);
     ca.globalCompositeOperation = 'lighter';
-    var RINGS = QUAL >= 2 ? 7 : QUAL === 1 ? 4 : 3, amp = .085 * I, kk = 9, w = t * 1.6;   // 0.25 Hz
+    var RINGS = QUAL >= 2 ? 7 : QUAL === 1 ? 4 : 1, amp = .085 * I, kk = 9, w = t * 1.6;   // 0.25 Hz
     for (var r0 = 0; r0 < RINGS; r0++) {
       var f0 = r0 / RINGS, f1 = (r0 + 1) / RINGS;
       var warp = 1 + amp * Math.sin(kk * f0 - w);
@@ -1462,21 +1473,30 @@
        draws is allowed to touch an edge. */
     // Scaling by bh/bw turns a circle of radius bw/2 into an ellipse that
     // touches all four edges at once, so the fade reaches zero just before
-    // the nearest edge rather than somewhere past the corners.
-    var fr = bw * .5;
+    // the nearest edge rather than somewhere past the corners. The mask is
+    // built once per size and kept, because rebuilding a gradient every
+    // frame is work that produces the identical answer every time.
+    if (!maskCv || maskCv.width !== bw || maskCv.height !== bh) {
+      maskCv = maskCv || document.createElement('canvas');
+      maskCv.width = bw; maskCv.height = bh;
+      var mc = maskCv.getContext('2d');
+      var fr = bw * .5;
+      mc.save();
+      mc.translate(bw * .5, bh * .5);
+      mc.scale(1, bh / bw);
+      var vg = mc.createRadialGradient(0, 0, fr * .34, 0, 0, fr * .97);
+      vg.addColorStop(0, 'rgba(0,0,0,1)');
+      vg.addColorStop(.62, 'rgba(0,0,0,.92)');
+      vg.addColorStop(1, 'rgba(0,0,0,0)');
+      mc.fillStyle = vg;
+      mc.fillRect(-bw, -bh, bw * 2, bh * 2);
+      mc.restore();
+    }
     ca.setTransform(1, 0, 0, 1, 0, 0);
     ca.globalCompositeOperation = 'destination-in';
-    ca.save();
-    ca.translate(bw * .5, bh * .5);
-    ca.scale(1, bh / bw);
-    var vg = ca.createRadialGradient(0, 0, fr * .34, 0, 0, fr * .97);
-    vg.addColorStop(0, 'rgba(0,0,0,1)');
-    vg.addColorStop(.62, 'rgba(0,0,0,.92)');
-    vg.addColorStop(1, 'rgba(0,0,0,0)');
-    ca.fillStyle = vg;
-    ca.fillRect(-bw, -bh, bw * 2, bh * 2);
-    ca.restore();
+    ca.drawImage(maskCv, 0, 0);
     reset(ca);
+    }
 
     /* ── Dissolution, then one upscale ───────────────────── */
     c.save();
@@ -1485,12 +1505,18 @@
     c.save();
     c.translate(W * .5, H * .5);
     c.scale(1, H / W);
-    var dg = c.createRadialGradient(0, 0, dr * .34, 0, 0, dr * .97);
-    dg.addColorStop(0, 'rgba(0,0,0,' + (I * .62).toFixed(3) + ')');
-    dg.addColorStop(.62, 'rgba(0,0,0,' + (I * .48).toFixed(3) + ')');
-    dg.addColorStop(1, 'rgba(0,0,0,0)');
-    c.fillStyle = dg;
+    // one gradient object per size, alpha carried by globalAlpha instead
+    if (!dimGrad || dimW !== W || dimH !== H) {
+      dimGrad = c.createRadialGradient(0, 0, dr * .34, 0, 0, dr * .97);
+      dimGrad.addColorStop(0, 'rgba(0,0,0,1)');
+      dimGrad.addColorStop(.62, 'rgba(0,0,0,.78)');
+      dimGrad.addColorStop(1, 'rgba(0,0,0,0)');
+      dimW = W; dimH = H;
+    }
+    c.globalAlpha = I * .62;
+    c.fillStyle = dimGrad;
     c.fillRect(-W, -H, W * 2, H * 2);
+    c.globalAlpha = 1;
     c.restore();
     c.globalAlpha = Math.min(1, I * 1.1);
     c.drawImage(pbufA, 0, 0, bw, bh, 0, 0, W, H);
