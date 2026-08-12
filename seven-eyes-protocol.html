@@ -5,10 +5,29 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <title>SYS://SEVEN-EYES.PROTOCOL</title>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
+<meta name="description" content="What your browser hands over the moment you arrive anywhere. A live demonstration.">
+<meta name="theme-color" content="#05050a">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Mikhail Edwin">
+<meta property="og:title" content="SEVEN EYES PROTOCOL">
+<meta property="og:description" content="What your browser hands over the moment you arrive anywhere. A live demonstration.">
+<meta property="og:url" content="https://www.mikhailedwin.com/seven-eyes-protocol.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="SEVEN EYES PROTOCOL">
+<meta name="twitter:description" content="What your browser hands over the moment you arrive anywhere. A live demonstration.">
+<link rel="canonical" href="https://www.mikhailedwin.com/seven-eyes-protocol.html">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"
+<!-- Fonts must never hold up the first paint. This host is unreachable
+     from some networks, and a blocking stylesheet means a blank page
+     until it times out. Loaded as print, promoted on arrival; the type
+     falls back to the system stack and swaps in when it lands. -->
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet"></noscript>
+<!-- Same reasoning as the fonts: the map styling must not gate the
+     first paint. The map itself only builds on load, by which point
+     this has either arrived or failed. -->
+<link rel="stylesheet" media="print" onload="this.media='all'" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"
   integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="anonymous" />
 <link rel="stylesheet" href="styles.css?v=7">
 <script>
@@ -72,7 +91,7 @@
   <a href="index.html" class="surv-back">[ &larr; BACK TO GRID ]</a>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"
+<script defer src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"
   integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous"></script>
 <script>
 // Block iOS/Safari browser-level pinch-zoom — Leaflet still handles the gesture

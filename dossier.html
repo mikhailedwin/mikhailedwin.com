@@ -4,9 +4,25 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>MIKHAIL EDWIN // DOSSIER</title>
+<meta name="description" content="Background, capabilities and operating principles. Mikhail Edwin, analyst and strategist in Hong Kong.">
+<meta name="theme-color" content="#05050a">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Mikhail Edwin">
+<meta property="og:title" content="MIKHAIL EDWIN // DOSSIER">
+<meta property="og:description" content="Background, capabilities and operating principles. Mikhail Edwin, analyst and strategist in Hong Kong.">
+<meta property="og:url" content="https://www.mikhailedwin.com/dossier.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="MIKHAIL EDWIN // DOSSIER">
+<meta name="twitter:description" content="Background, capabilities and operating principles. Mikhail Edwin, analyst and strategist in Hong Kong.">
+<link rel="canonical" href="https://www.mikhailedwin.com/dossier.html">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<!-- Fonts must never hold up the first paint. This host is unreachable
+     from some networks, and a blocking stylesheet means a blank page
+     until it times out. Loaded as print, promoted on arrival; the type
+     falls back to the system stack and swaps in when it lands. -->
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"></noscript>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="hud.css?v=9">
 <style>
@@ -262,7 +278,7 @@
         setActive(Math.max(0, Math.min(slides.length - 1, Math.round(track.scrollLeft / track.clientWidth))));
         var max = track.scrollWidth - track.clientWidth;
         beam.style.width = (max > 0 ? track.scrollLeft / max * 100 : 0) + '%';
-      });
+      }, { passive: true });
     });
     document.querySelector('.arw.prev').addEventListener('click', function () { go(cur - 1); });
     document.querySelector('.arw.next').addEventListener('click', function () { go(cur + 1); });

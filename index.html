@@ -4,9 +4,25 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>MIKHAIL EDWIN // NUCLEUS</title>
+<meta name="description" content="Mikhail Edwin — analyst and strategist, operator in the wires of capital. Hong Kong.">
+<meta name="theme-color" content="#05050a">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Mikhail Edwin">
+<meta property="og:title" content="MIKHAIL EDWIN">
+<meta property="og:description" content="Mikhail Edwin — analyst and strategist, operator in the wires of capital. Hong Kong.">
+<meta property="og:url" content="https://www.mikhailedwin.com/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="MIKHAIL EDWIN">
+<meta name="twitter:description" content="Mikhail Edwin — analyst and strategist, operator in the wires of capital. Hong Kong.">
+<link rel="canonical" href="https://www.mikhailedwin.com/">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<!-- Fonts must never hold up the first paint. This host is unreachable
+     from some networks, and a blocking stylesheet means a blank page
+     until it times out. Loaded as print, promoted on arrival; the type
+     falls back to the system stack and swaps in when it lands. -->
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"></noscript>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="hud.css?v=9">
 <style>
@@ -27,12 +43,12 @@
 .field:focus-visible { outline: 1px solid var(--mg-1); outline-offset: 4px; }
 
 /* Warp-through: chrome falls away as the core rushes the viewer */
-.hud { transition: opacity .5s ease, transform .8s cubic-bezier(.6,0,.9,.3), filter .5s ease; }
-.hud.warping { opacity: 0; transform: scale(1.16); filter: blur(2px); }
+.hud { transition: opacity .2s ease-in, transform .38s cubic-bezier(.45,0,.9,.35), filter .2s ease-in; }
+.hud.warping { opacity: 0; transform: scale(1.12); filter: blur(1.5px); }
 .hud.warping .field { opacity: 1; }
 #warp {
   position: fixed; inset: 0; z-index: 90; pointer-events: none; opacity: 0;
-  background: radial-gradient(circle at 50% 50%, #ffffff 0%, var(--cyan) 34%, rgba(0,240,255,0) 72%);
+  background: radial-gradient(circle at 50% 50%, #eafcff 0%, var(--cyan) 42%, rgba(0,240,255,0) 78%);
 }
 .f-tag { position: absolute; bottom: 0; font-size: 9px; letter-spacing: .22em; color: var(--cy-2); pointer-events: none; }
 .f-l { left: 0; }
@@ -910,10 +926,13 @@
     c.clearRect(0, 0, W, H);
 
     if (warping) {
-      var zp = Math.min(1, (t * 1000 - zoomT0) / 850);
+      var zp = Math.min(1, (t * 1000 - zoomT0) / 420);
       zoom = zp * zp * zp;
       R *= 1 + zoom * 22;
-      warpEl.style.opacity = Math.max(0, (zp - .55) / .45).toFixed(3);
+      // The flash only exists to cover the swap. It arrives late and eases
+      // in rather than being held on screen for a third of a second.
+      var fl = Math.max(0, (zp - .70) / .30);
+      warpEl.style.opacity = (fl * fl * .92).toFixed(3);
     }
 
     camX = lerp(camX, camTX, .045);
@@ -1499,7 +1518,7 @@
     warping = true;
     zoomT0 = performance.now();
     document.querySelector('.hud').classList.add('warping');
-    setTimeout(function () { location.href = 'seven-eyes-protocol.html'; }, 860);
+    setTimeout(function () { location.href = 'seven-eyes-protocol.html'; }, 430);
   }
   oCv.addEventListener('pointermove', function (e) {
     var r = oCv.getBoundingClientRect();

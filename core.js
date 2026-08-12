@@ -163,7 +163,7 @@
       requestAnimationFrame(function () {
         document.documentElement.style.setProperty('--scroll-y', window.scrollY);
         syTick = false;
-      });
+      }, { passive: true });
     }, { passive: true });
   }
 
