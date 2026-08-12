@@ -1,0 +1,1743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MIKHAIL EDWIN // NUCLEUS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="hud.css?v=9">
+<style>
+/* ── Clock ────────────────────────────────────────────────── */
+.clk { text-align: right; }
+.clk .big {
+  color: var(--amber); font-size: 27px; letter-spacing: .04em;
+  font-variant-numeric: tabular-nums; line-height: 1;
+  text-shadow: 0 0 18px rgba(255,184,0,.28);
+}
+.clk .big em { font-style: normal; color: rgba(255,184,0,.55); font-size: 15px; }
+.clk .l { color: var(--am-2); font-size: 9px; letter-spacing: .2em; margin-top: 7px; }
+.clk .l.date { color: var(--am-1); }
+
+/* ── Field (the orbital ticker) ───────────────────────────── */
+.field { position: relative; min-height: 0; cursor: crosshair; outline: none; }
+#orb { display: block; width: 100%; height: 100%; }
+.field:focus-visible { outline: 1px solid var(--mg-1); outline-offset: 4px; }
+
+/* Warp-through: chrome falls away as the core rushes the viewer */
+.hud { transition: opacity .5s ease, transform .8s cubic-bezier(.6,0,.9,.3), filter .5s ease; }
+.hud.warping { opacity: 0; transform: scale(1.16); filter: blur(2px); }
+.hud.warping .field { opacity: 1; }
+#warp {
+  position: fixed; inset: 0; z-index: 90; pointer-events: none; opacity: 0;
+  background: radial-gradient(circle at 50% 50%, #ffffff 0%, var(--cyan) 34%, rgba(0,240,255,0) 72%);
+}
+.f-tag { position: absolute; bottom: 0; font-size: 9px; letter-spacing: .22em; color: var(--cy-2); pointer-events: none; }
+.f-l { left: 0; }
+.f-r { right: 0; text-align: right; }
+.f-r b { color: var(--cy-1); font-weight: 400; }
+
+/* ── Vitals ───────────────────────────────────────────────── */
+#wave { display: block; width: 100%; height: 68px; }
+</style>
+</head>
+<body>
+
+<div id="warp"></div>
+
+<div class="hud">
+
+  <header class="strip">
+    <span class="mark"><img src="favicon.svg" alt="Mikhail Edwin" width="22" height="19"></span>
+    <span class="build hide-s"><i class="pip warn" id="pip"></i>OPERATING SYSTEM / <em id="state" class="warn">INITIALISING</em></span>
+    <div class="tape" id="tape" aria-hidden="true"><span class="tape-rail" id="tapeRail"></span></div>
+    <span class="spacer"></span>
+  </header>
+
+  <!-- LEFT -->
+  <div class="col">
+    <div class="ident">
+      <div class="n">
+        <span class="glitch" data-text="MIKHAIL">MIKHAIL</span>
+        <span class="glitch b" data-text="EDWIN">EDWIN</span>
+      </div>
+      <div class="r">ANALYST <i>/</i> STRATEGIST<br>OPERATOR IN THE WIRES<br>OF CAPITAL</div>
+    </div>
+
+    <div class="mod mod--vitals">
+      <div class="h"><span>VITALS</span><b class="life"><span id="bpm">--</span> BPM</b></div>
+      <canvas id="wave"></canvas>
+    </div>
+
+    <div class="mod mod--operator">
+      <div class="h"><span>OPERATOR</span><b>ID 007</b></div>
+      <div class="kv"><span class="k">FUNCTION</span><span class="v">PE ANALYST</span></div>
+      <div class="kv"><span class="k">SECTOR</span><span class="v">HONG KONG</span></div>
+      <div class="kv"><span class="k">TRAINING</span><span class="v">BA PHIL / MPH</span></div>
+      <div class="kv"><span class="k">STATUS</span><span class="v life">DEPLOYED</span></div>
+      <div class="kv"><span class="k">UPTIME</span><span class="v t" id="up">--</span></div>
+    </div>
+  </div>
+
+  <!-- CENTRE FIELD -->
+  <div class="field" id="field" role="button" tabindex="0"
+       aria-label="Seven Eyes protocol. Opens the surveillance view.">
+    <canvas id="orb"></canvas>
+    <div class="f-tag f-l">NUCLEUS / <span id="f-mode">IDLE</span></div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="col">
+    <div class="clk">
+      <div class="big"><span id="ck">00:00:00</span><em id="ms">.00</em></div>
+      <div class="l date" id="dt">-- --- ----</div>
+      <div class="l">22.2796&deg;N &middot; 114.1736&deg;E</div>
+    </div>
+
+    <div class="mod logmod mod--log">
+      <div class="h time"><span>SEQUENCING</span><b id="seq">000</b></div>
+      <div class="log" id="log"></div>
+      <div class="caret" id="caret">mikhail@nucleus:~$ </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM MENU -->
+  <nav class="menu" id="menu">
+    <span class="menu-scan" id="scan"></span>
+    <a class="mi on" href="#"><span class="idx">01</span><span class="t2">Nucleus</span><span class="c2">You are here</span></a>
+    <a class="mi" href="dossier.html"><span class="idx">02</span><span class="t2">Dossier</span><span class="c2">Background and doctrine</span></a>
+    <a class="mi" href="projects.html"><span class="idx">03</span><span class="t2">Projects</span><span class="c2">What I am building</span></a>
+    <a class="mi" href="https://linkedin.com/in/mikhailedwin" target="_blank" rel="noopener"><span class="idx">04</span><span class="t2">Contact</span><span class="c2">Open the uplink</span></a>
+  </nav>
+
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var $ = function (i) { return document.getElementById(i); };
+  var lerp = function (a, b, t) { return a + (b - a) * t; };
+  var LM = '193,255,58';
+
+  /* ── Entropy ─────────────────────────────────────────────── */
+  var QRN = [], qi = Math.floor(Math.random() * 9973);
+  function qrand() { return QRN.length ? QRN[qi++ % QRN.length] : Math.random(); }
+  // Shuffle bag: every entry comes up once before any comes up twice, and
+  // the running order is different each time the bag refills. Beats plain
+  // random, which clumps and repeats.
+  function bagOf(arr) {
+    var bag = [];
+    return function () {
+      if (!bag.length) {
+        bag = arr.slice();
+        for (var i = bag.length - 1; i > 0; i--) {
+          var j = Math.floor(qrand() * (i + 1));
+          var t = bag[i]; bag[i] = bag[j]; bag[j] = t;
+        }
+      }
+      return bag.pop();
+    };
+  }
+  fetch('quantum_rng.json?w=' + Math.floor(Date.now() / 6048e5))
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (d.values && d.values.length) {
+        QRN = d.values;
+        log('QUANTUM POOL BOUND / ' + d.values.length + ' SEEDS');
+      }
+    })
+    .catch(function () { log('ENTROPY FALLBACK / PSEUDORANDOM'); });
+
+  /* ── Clock / uptime ──────────────────────────────────────── */
+  function pad(n, w) { return String(n).padStart(w || 2, '0'); }
+  var fmt = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Asia/Hong_Kong', hour12: false,
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+    day: '2-digit', month: 'short', year: 'numeric'
+  });
+  var ckEl = $('ck'), msEl = $('ms'), dtEl = $('dt');
+  var lastSec = -1, lastCk = '', lastDt = '', lastMs = '';
+  function clock() {
+    var now = Date.now();
+    var sec = (now / 1000) | 0;
+    if (sec !== lastSec) {                 // the expensive part, once a second
+      lastSec = sec;
+      var g = {};
+      fmt.formatToParts(new Date(now)).forEach(function (p) { g[p.type] = p.value; });
+      var ck = g.hour + ':' + g.minute + ':' + g.second;
+      if (ck !== lastCk) { lastCk = ck; ckEl.textContent = ck; }
+      var dt = g.day + ' ' + String(g.month).toUpperCase() + ' ' + g.year + ' / HKT';
+      if (dt !== lastDt) { lastDt = dt; dtEl.textContent = dt; }
+    }
+    var ms = '.' + pad(Math.floor(now % 1000 / 10));
+    if (ms !== lastMs) { lastMs = ms; msEl.textContent = ms; }
+  }
+  var BIRTH = new Date('1999-07-02T09:15:00Z').getTime();
+  function uptime() {
+    var s = Math.floor((Date.now() - BIRTH) / 1000);
+    $('up').textContent = 'T+' + Math.floor(s / 3600).toLocaleString('en-US') + ':' + pad(s % 3600 / 60 | 0) + ':' + pad(s % 60);
+  }
+  uptime(); setInterval(uptime, 1000);
+
+  /* ── Log ─────────────────────────────────────────────────── */
+  var logEl = $('log'), seq = 0;
+  var tfmt = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Asia/Hong_Kong', hour12: false,
+    hour: '2-digit', minute: '2-digit', second: '2-digit'
+  });
+  function log(msg, cls) {
+    var el = document.createElement('div');
+    el.className = 'ln new ' + (cls || '');
+    el.innerHTML = '<span class="ts">' + tfmt.format(new Date()) + '</span> ' + msg;
+    logEl.appendChild(el);
+    setTimeout(function () { el.classList.remove('new'); }, 360);
+    while (logEl.children.length > 30) logEl.removeChild(logEl.firstChild);
+    $('seq').textContent = pad(++seq % 1000, 3);
+  }
+  // Seed enough scrollback that the panel opens full rather than
+  // with a void between the header and the first line.
+  // A boot has a beginning and an end, so those stay put. Everything in
+  // between is drawn fresh each load, in a fresh order, from a pool far
+  // larger than the number of slots.
+  var BOOT_MID = [
+    'BUS ENUMERATED / 14 DEVICES',
+    'KERNEL 4.1.7 / WETWARE BRIDGE OK',
+    'MOUNT /nucleus  ................ OK',
+    'MOUNT /doctrine ......... ENCRYPTED',
+    'MOUNT /archive  ....... READ ONLY',
+    'TLS 1.3 / CIPHER AES-256-GCM',
+    'MARKET SOCKET OPENED',
+    'FEED HANDSHAKE / 15 SYMBOLS',
+    'ENTROPY POOL SEEDED',
+    'CARDIO DRIVER ATTACHED',
+    'CLOCK SYNCED / STRATUM 2 / HKT',
+    'PAGE TABLES REBUILT / 0 FAULTS',
+    'SCHEDULER ONLINE / 8 THREADS',
+    'ORBITAL SOLVER LOADED',
+    'COLOUR RAMP CALIBRATED',
+    'TAPE READER ATTACHED',
+    'YIELD CURVE PARSED / 5 TENORS',
+    'CACHE WARM / 94% HIT',
+    'WATCHDOG ARMED / 30s',
+    'SIGNING KEY VERIFIED',
+    'TELEMETRY MUTED BY OPERATOR',
+    'FIRMWARE 2.4.1 / NO ROLLBACK'
+  ];
+  var bootBag = bagOf(BOOT_MID);
+  log('POST / MEMORY 64G OK');
+  var bootN = 8 + Math.floor(qrand() * 3);
+  for (var bi = 0; bi < bootN; bi++) log(bootBag());
+  log('BOOT SEQUENCE COMPLETE');
+  log('OPERATOR AUTHENTICATED');
+
+  /* ── The machine is always building ──────────────────────── */
+  // Real data first: status.json carries the genuine last operation,
+  // written by the GitHub Actions workflows. This line is actually true.
+  fetch('status.json?t=' + Math.floor(Date.now() / 60000))
+    .then(function (r) { return r.json(); })
+    .then(function (d) { if (d.last_op) log('LAST OP <span class="s">' + d.last_op + '</span>'); })
+    .catch(function () {});
+
+  function hex(n) {
+    var o = '', h = '0123456789abcdef';
+    for (var i = 0; i < n; i++) o += h[Math.floor(qrand() * 16)];
+    return o;
+  }
+  function toBin(w) {
+    return w.split('').map(function (ch) {
+      return ch.charCodeAt(0).toString(2).padStart(8, '0');
+    }).join(' ');
+  }
+
+  var build = 470 + Math.floor(qrand() * 90);
+  // Real work, in the two languages this operator actually thinks in:
+  // quantitative finance and biostatistics.
+  var CODE = [
+    '<span class="c-k">double</span> <span class="c-f">blackScholes</span>(S,K,r,v,T) {',
+    '  d1 = (log(S/K)+(r+v*v/<span class="c-n">2</span>)*T)/(v*sqrt(T));',
+    'sharpe = (<span class="c-f">mean</span>(r) - rf) / <span class="c-f">stdev</span>(r);',
+    'beta = <span class="c-f">cov</span>(ri, rm) / <span class="c-f">var</span>(rm);',
+    '<span class="c-k">for</span> (<span class="c-k">auto</span>&amp; t : trades) pnl += t.qty * dP;',
+    'var95 = <span class="c-f">percentile</span>(rets, <span class="c-n">5</span>);',
+    'irr = <span class="c-f">npvSolve</span>(cf, guess=<span class="c-n">0.1</span>);',
+    '<span class="c-k">const</span> dcf = cf.<span class="c-f">reduce</span>((a,c,t)=&gt;a+c/r**t);',
+    'ev = mktCap + debt - cash; <span class="c-c">// EV</span>',
+    '<span class="c-f">coxph</span>(Surv(t, d) ~ arm + age);',
+    'hr = <span class="c-f">exp</span>(coef); <span class="c-c">// hazard ratio</span>',
+    'km.<span class="c-f">fit</span>(T, event_observed=E);',
+    '<span class="c-k">if</span> (p &lt; <span class="c-n">0.05</span>) <span class="c-f">rejectNull</span>();',
+    'ci = [<span class="c-f">exp</span>(b-<span class="c-n">1.96</span>*se), <span class="c-f">exp</span>(b+<span class="c-n">1.96</span>*se)];',
+    'auc = <span class="c-f">trapz</span>(fpr, tpr);',
+    'expr = <span class="c-f">log2</span>(counts + <span class="c-n">1</span>);',
+    '<span class="c-f">align</span>(seqA, seqB, BLOSUM62);',
+    'power = <span class="c-f">tTestPower</span>(d=<span class="c-n">0.4</span>, n=<span class="c-n">180</span>);'
+  ];
+  /* ── Shell work ────────────────────────────────────────────
+     Set dressing, not tooling: plausible operator commands with no
+     real host behind any of them. Some carry their own reply. */
+  function sh(bin, rest, out, bad) {
+    var l = '<span class="sh"><span class="p">$</span> <span class="b">' + bin + '</span> ' + rest + '</span>';
+    if (out) l += ' <span class="out' + (bad ? ' bad' : '') + '">' + out + '</span>';
+    return l;
+  }
+  var OPS = [
+    function () { return sh('nmap', '<span class="fl">-sS -T4 -p-</span> 10.0.<span class="fl">' + Math.floor(qrand() * 40) + '</span>.0/24',
+                            '&rarr; ' + (1 + Math.floor(qrand() * 9)) + ' HOSTS UP'); },
+    function () { return sh('ssh', '<span class="fl">-i</span> ~/.ssh/id_ed25519 ops@node-<span class="fl">' + pad(Math.floor(qrand() * 32), 2) + '</span>', '&rarr; AUTH OK'); },
+    function () { return sh('tcpdump', "<span class=\"fl\">-i</span> eth0 'tcp port 443' <span class=\"fl\">-w</span> cap.pcap"); },
+    function () { return sh('openssl', 's_client <span class="fl">-connect</span> feed:443', '&rarr; TLSv1.3 / CERT PINNED'); },
+    function () { return sh('netstat', '<span class="fl">-tulpn</span> | grep LISTEN', '&rarr; ' + (2 + Math.floor(qrand() * 7)) + ' SOCKETS'); },
+    function () { return sh('dig', '<span class="fl">+short</span> mikhailedwin.com', '&rarr; 104.21.' + Math.floor(qrand() * 255) + '.' + Math.floor(qrand() * 255)); },
+    function () { return sh('gpg', '<span class="fl">--decrypt</span> doctrine.asc', '&rarr; GOOD SIGNATURE'); },
+    function () { return sh('strace', '<span class="fl">-p</span> ' + (2000 + Math.floor(qrand() * 6000)) + ' <span class="fl">-e</span> trace=network'); },
+    function () { return sh('curl', '<span class="fl">-s</span> feed/quote | jq <span class="st">\'.[] | .px\'</span>'); },
+    function () { return sh('grep', '<span class="fl">-RIn</span> <span class="st">"SECRET"</span> <span class="fl">--exclude-dir=</span>.git', '&rarr; 0 MATCHES'); },
+    function () { return sh('ssh-keygen', '<span class="fl">-lf</span> id_ed25519.pub', '&rarr; 256 SHA256:' + hex(6)); },
+    function () { return sh('iptables', '<span class="fl">-A</span> OUTPUT <span class="fl">-p</span> tcp <span class="fl">--dport</span> 22 <span class="fl">-j</span> LOG'); },
+    function () { return sh('base64', '<span class="fl">-d</span> payload.b64 | xxd | head <span class="fl">-n</span> 4'); },
+    function () { return sh('awk', '<span class="st">\'{s+=$3} END {print s}\'</span> fills.csv', '&rarr; ' + (100 + Math.floor(qrand() * 900)) + 'K'); },
+    function () { return sh('fail2ban-client', 'status sshd', '&rarr; ' + Math.floor(qrand() * 14) + ' BANNED'); },
+    function () { return sh('rsync', '<span class="fl">-az --delete</span> ./dist node-04:/srv', '&rarr; ' + (10 + Math.floor(qrand() * 90)) + ' FILES'); },
+    function () { return sh('sha256sum', 'nucleus.bin', '&rarr; ' + hex(10) + '&hellip;'); },
+    function () { return sh('kill', '<span class="fl">-9</span> ' + (2000 + Math.floor(qrand() * 6000)), '&rarr; NO SUCH PROCESS', 1); },
+    function () { return sh('tail', '<span class="fl">-f</span> /var/log/auth.log', '&rarr; ' + (1 + Math.floor(qrand() * 5)) + ' FAILED LOGINS', 1); },
+    function () { return sh('systemctl', 'restart nucleus.service', '&rarr; ACTIVE'); }
+  ];
+
+  var CHATTER = [
+    function () { return 'COMMIT <span class="s">' + hex(7) + '</span> // PUSHED'; },
+    function () { return 'BUILD #' + (++build) + ' PASSED'; }
+  ];
+  var codeBag = bagOf(CODE), chatterBag = bagOf(CHATTER), opsBag = bagOf(OPS);
+  (function chatter() {
+    // Half code, half shell, punctuated by the occasional commit.
+    var roll = qrand();
+    var line = roll < .42 ? '<span class="code">' + codeBag() + '</span>'
+             : roll < .84 ? opsBag()()
+             : chatterBag()();
+    log(line);
+    setTimeout(chatter, 4420 + qrand() * 3380);
+  })();
+
+  var WORDS = ['MIKHAIL', 'DEPLOY', 'SIGNAL', 'CAPITAL', 'HONGKONG', 'NUCLEUS',
+               'LIQUIDITY', 'MANDATE', 'CARRY', 'HAZARD', 'COHORT', 'ALPHA'];
+  var wordBag = bagOf(WORDS);
+  (function binary() {
+    log('<span class="bin">' + toBin(wordBag()) + '</span>');
+    setTimeout(binary, 14300 + qrand() * 6500);
+  })();
+
+  /* ── The terminal loses its mind ─────────────────────────
+     Someone is in here editing while it runs: rows scramble,
+     shear out of line, invert, and the whole panel tears its
+     colour channels apart. Every effect self-heals.
+     ──────────────────────────────────────────────────────── */
+  var NOISE = '█▓░▒#?X!@01%$/\\<>[]{}=+*';
+  var busy = 0;
+
+  function rows() { return [].slice.call(logEl.children); }
+  function pick() { var r = rows(); return r.length ? r[Math.floor(qrand() * r.length)] : null; }
+
+  // Character scramble on a single row, then resolve.
+  function scramble(el, ticks, speed) {
+    if (!el || el._busy) return;
+    el._busy = true; busy++;
+    var html = el.innerHTML, txt = el.textContent, n = 0;
+    var id = setInterval(function () {
+      var ch = txt.split('');
+      var hits = 2 + Math.floor(qrand() * 5);
+      for (var i = 0; i < hits; i++) {
+        var pos = Math.floor(Math.random() * ch.length);
+        if (ch[pos] !== ' ') ch[pos] = NOISE[Math.floor(Math.random() * NOISE.length)];
+      }
+      el.textContent = ch.join('');
+      if (++n >= ticks) {
+        clearInterval(id);
+        el.innerHTML = html; el._busy = false; busy--;
+      }
+    }, speed);
+  }
+
+  // Rows shear sideways for a beat.
+  function slip(el) {
+    if (!el) return;
+    el.classList.add('slip');
+    setTimeout(function () { el.classList.remove('slip'); }, 90 + qrand() * 120);
+  }
+
+  // A row flashes inverted, like a selection sweeping past.
+  function invert(el) {
+    if (!el) return;
+    el.classList.add('inv');
+    setTimeout(function () { el.classList.remove('inv'); }, 70 + qrand() * 90);
+  }
+
+  // Whole-panel channel tear.
+  function tear() {
+    logEl.classList.remove('tear');
+    void logEl.offsetWidth;
+    logEl.classList.add('tear');
+    setTimeout(function () { logEl.classList.remove('tear'); }, 240);
+  }
+
+  // Constant low-level unrest.
+  (function unrest() {
+    var roll = qrand();
+    if (busy < 3) {
+      if (roll < .42)      scramble(pick(), 4 + Math.floor(qrand() * 4), 42);
+      else if (roll < .66) slip(pick());
+      else if (roll < .80) invert(pick());
+    }
+    setTimeout(unrest, 545 + qrand() * 1170);
+  })();
+
+  // Occasional full breakdown: several rows go at once and the panel tears.
+  (function breakdown() {
+    tear();
+    var r = rows(), hit = Math.min(r.length, 3 + Math.floor(qrand() * 3));
+    for (var i = 0; i < hit; i++) {
+      (function (d) {
+        setTimeout(function () {
+          var el = r[r.length - 1 - d];
+          scramble(el, 6 + Math.floor(qrand() * 5), 34);
+          if (qrand() > .55) slip(el);
+        }, d * 55);
+      })(i);
+    }
+    setTimeout(breakdown, 9100 + qrand() * 11700);
+  })();
+
+  // The caret occasionally types a phantom command and gets denied.
+  (function phantom() {
+    var CMDS = ['recompile --core', 'trace 0x7ffd', 'patch nucleus.c', 'fit cox --robust',
+                'push origin main', 'solve irr --newton', 'seq align --local'];
+    var el = $('caret'), base = 'mikhail@nucleus:~$ ';
+    var cmd = CMDS[Math.floor(qrand() * CMDS.length)], i = 0;
+    var id = setInterval(function () {
+      el.textContent = base + cmd.slice(0, ++i);
+      if (i >= cmd.length) {
+        clearInterval(id);
+        setTimeout(function () { el.textContent = base; }, 900 + qrand() * 1200);
+      }
+    }, 55);
+    setTimeout(phantom, 11700 + qrand() * 10400);
+  })();
+
+  /* ══════════════════════════════════════════════════════════
+     MARKET
+     ══════════════════════════════════════════════════════════ */
+  var FH = 'd81kbb9r01qrojfbudjgd81kbb9r01qrojfbudk0';
+  var EQ = ['NVDA','MSFT','AAPL','TSLA','META','BX','KKR','JPM','BABA','XOM','LLY','COIN'];
+  var mkt = {}, feed = [];
+
+  function get(url) {
+    var c = new AbortController(), k = setTimeout(function () { c.abort(); }, 7000);
+    return fetch(url, { signal: c.signal })
+      .then(function (r) { clearTimeout(k); return r.ok ? r.json() : null; })
+      .catch(function () { clearTimeout(k); return null; });
+  }
+  function money(n) {
+    if (n == null) return '---';
+    return '$' + (Math.abs(n) >= 10000
+      ? n.toLocaleString('en-US', { maximumFractionDigits: 0 })
+      : n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+  }
+  function pctf(p) { return (p >= 0 ? '+' : '') + p.toFixed(2) + '%'; }
+
+  function loadEq() {
+    var jobs = [];
+    for (var i = 0; i < EQ.length; i += 8) (function (b, k) {
+      jobs.push(new Promise(function (res) {
+        setTimeout(function () {
+          Promise.all(b.map(function (s) {
+            return get('https://finnhub.io/api/v1/quote?symbol=' + s + '&token=' + FH)
+              .then(function (j) { if (j && j.c) mkt[s] = { price: j.c, pct: j.dp == null ? null : j.dp }; });
+          })).then(res);
+        }, k * 250);
+      }));
+    })(EQ.slice(i, i + 8), i / 8);
+    return Promise.all(jobs);
+  }
+  function loadCx() {
+    return get('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd&include_24hr_change=true')
+      .then(function (j) {
+        if (!j) return;
+        if (j.bitcoin)  mkt['BTC'] = { price: j.bitcoin.usd,  pct: j.bitcoin.usd_24h_change };
+        if (j.ethereum) mkt['ETH'] = { price: j.ethereum.usd, pct: j.ethereum.usd_24h_change };
+        if (j.solana)   mkt['SOL'] = { price: j.solana.usd,   pct: j.solana.usd_24h_change };
+      });
+  }
+
+  function render() {
+    var rows = Object.keys(mkt).map(function (s) { return { s: s, d: mkt[s] }; })
+      .filter(function (r) { return r.d && r.d.pct != null; })
+      .sort(function (a, b) { return b.d.pct - a.d.pct; });
+
+    if (!rows.length) {
+      var st = $('state'); st.textContent = 'FEED DARK'; st.className = 'warn';
+      $('pip').className = 'pip warn';
+      $('f-mode').textContent = 'DARK';
+      log('MARKET LINK UNREACHABLE / IDLE ORBIT');
+      return;
+    }
+
+    var st2 = $('state'); st2.textContent = 'ONLINE'; st2.className = '';
+    $('pip').className = 'pip';
+    var top = rows[0], low = rows[rows.length - 1];
+
+    var vol = rows.reduce(function (a, r) { return a + Math.abs(r.d.pct); }, 0) / rows.length;
+    $('f-mode').textContent = vol > 2 ? 'VOLATILE' : 'STABLE';
+
+    // Volatility sets the CENTRE of the heart-rate band, not a fixed value
+    bpmCentre = Math.max(76, Math.min(102, 78 + vol * 8));
+    charge = Math.min(1, .3 + vol / 5);
+    bind(rows);
+    emitPulse();
+    feed = rows.slice();
+    log('SNAPSHOT / ' + rows.length + ' SYMBOLS / VOL ' + vol.toFixed(2) + '%');
+  }
+
+  /* ── Sovereign yields ──────────────────────────────────────
+     Neither the Treasury nor FRED will answer a browser, so a
+     scheduled job pulls them and leaves bonds.json on our own origin. */
+  var bonds = [];
+  function loadBonds() {
+    return get('bonds.json?d=' + Math.floor(Date.now() / 216e5))
+      .then(function (j) { if (j && j.rows) bonds = j.rows; });
+  }
+
+  var TAPE_NAME = { US3Y: 'US 3', US5Y: 'US 5', US10Y: 'US 10', CN10Y: 'CN 10', IN10Y: 'IN 10' };
+
+  function tape() {
+    var rail = $('tapeRail');
+    if (!rail) return;
+    var out = [];
+
+    bonds.forEach(function (b) {
+      if (b.val == null) return;
+      var cls = b.chg == null ? '' : (b.chg >= 0 ? 'up' : 'dn');
+      var ch = b.chg == null ? '' :
+        '<span class="c ' + cls + '">' + (b.chg >= 0 ? '+' : '') + b.chg.toFixed(2) + '</span>';
+      out.push('<span class="tk y' + (b.stale ? ' stale' : '') + '">' +
+               '<span class="s">' + (TAPE_NAME[b.sym] || b.sym) + '</span>' +
+               '<span class="p">' + b.val.toFixed(2) + '%</span>' + ch + '</span>');
+    });
+
+    Object.keys(mkt).forEach(function (k) {
+      var d = mkt[k];
+      if (!d || d.pct == null) return;
+      out.push('<span class="tk">' +
+               '<span class="s">' + k + '</span>' +
+               '<span class="p">' + money(d.price) + '</span>' +
+               '<span class="c ' + (d.pct >= 0 ? 'up' : 'dn') + '">' + pctf(d.pct) + '</span></span>');
+    });
+
+    if (!out.length) {
+      rail.innerHTML = '<span class="tk"><span class="s">TAPE</span>' +
+                       '<span class="p">AWAITING FEED</span></span>';
+      return;
+    }
+    // Twice through, so the halfway wrap is seamless.
+    var run = out.join('');
+    rail.innerHTML = run + run;
+    // Constant crawl speed regardless of how much is on the rail.
+    var half = rail.scrollWidth / 2;
+    if (half > 0) rail.style.animationDuration = Math.max(24, half / 32).toFixed(1) + 's';
+  }
+
+  function refresh() {
+    // Yields come off our own origin and land immediately; the market legs
+    // can take seconds or never answer at all. Paint as each arrives rather
+    // than holding an empty rail hostage to the slowest one.
+    loadBonds().then(tape);
+    Promise.all([loadEq(), loadCx()]).then(function () { render(); tape(); });
+  }
+  refresh();
+  setInterval(refresh, 90000);
+
+  var fi = 0;
+  setInterval(function () {
+    if (!feed.length) return;
+    var r = feed[fi++ % feed.length];
+    log('<span class="s">' + r.s + '</span> ' + money(r.d.price) +
+        ' <span class="n">' + pctf(r.d.pct) + '</span>', r.d.pct >= 0 ? 'up' : 'dn');
+  }, 3640);
+
+  /* ══════════════════════════════════════════════════════════
+     THE NUCLEUS
+     A 3D atom where hue carries data. Each symbol is an electron
+     on its own precessing, inclined orbit; its colour is its
+     performance on a continuous ramp:
+
+        lime ── cyan ── pale ── rose ── magenta
+        strong gain          flat          deep loss
+
+     so a green day turns the whole atom lime and a bloodbath
+     turns it magenta. The core runs a temperature gradient from
+     white-hot centre out to the shell edge. Amber is never used
+     here: it belongs to the time domain.
+     ══════════════════════════════════════════════════════════ */
+  var oCv = $('orb'), OG = null;
+  oCv.style.cursor = 'crosshair';
+  var bodies = [], charge = .3, spin = 0, coreRot = 0;
+  // The outermost ring lives in the same space as the orbits rather than
+  // being painted flat on the glass, so it can revolve and tumble at once.
+  var ring = { rad: 1.42, inc: 0, ci: 1, si: 0, node: 0, prec: 0 }, ringPh = 0;
+
+  /* ── THE BLOOM ─────────────────────────────────────────────
+     A second state for the nucleus. For a few seconds it stops
+     being an instrument and becomes geometry: kaleidoscopic,
+     recursive, curving, and at the peak no longer bound to the
+     palette at all. It is still a readout though. How often it
+     opens and how far it goes are both set by how hard the
+     market is moving, so the machine comes apart when the tape
+     does. Every frequency in here sits far below 3Hz on purpose.
+     ────────────────────────────────────────────────────────── */
+  var psy = 0, psyT = 0, psyPeak = 0, psyHold = 0, psyNext = 10 + Math.random() * 14;
+  var dwell = 0, dwellOn = false, lastHX = -9999, lastHY = -9999;
+  var pbufA = null, pbufB = null;
+  var CAN_FILTER = (function () {
+    try {
+      var cc = document.createElement('canvas').getContext('2d');
+      cc.filter = 'hue-rotate(90deg)';
+      return cc.filter !== 'none' && cc.filter !== '';
+    } catch (e) { return false; }
+  })();
+
+  var hoverX = -9999, hoverY = -9999, hoverBody = null;
+  var fieldHot = false;
+  var sweep = 0;
+  var zoom = 0, zoomT0 = 0, warping = false;
+  var FLARE = true;                       // dropped first if frames slip
+
+  var camTX = 0, camTY = 0, camX = 0, camY = 0;
+  var PARALLAX = matchMedia('(pointer: fine)').matches && !RM;
+  if (PARALLAX) {
+    addEventListener('pointermove', function (e) {
+      camTX = (e.clientX / innerWidth - .5) * 2;
+      camTY = (e.clientY / innerHeight - .5) * 2;
+    }, { passive: true });
+  }
+
+  /* ── Tilt ──────────────────────────────────────────────────
+     On a phone there is no cursor to lead the camera, so the
+     handset itself becomes the cursor: tilt it and the atom leans
+     with you. The first reading is taken as level, whatever way
+     you happen to be holding it, and that neutral drifts very
+     slowly so settling into a new position re-centres rather than
+     pinning the view at the edge. iOS needs to be asked first,
+     and asking has to come from a tap. */
+  var tiltOn = false, tiltCal = false, tilt0x = 0, tilt0y = 0;
+  function onTilt(e) {
+    if (e.beta == null && e.gamma == null) return;
+    var bB = e.beta || 0, gG = e.gamma || 0;
+    var ang = (screen.orientation && screen.orientation.angle) || window.orientation || 0;
+    var tx, ty;
+    if (ang === 90)                       { tx =  bB; ty = -gG; }
+    else if (ang === -90 || ang === 270)  { tx = -bB; ty =  gG; }
+    else if (ang === 180)                 { tx = -gG; ty = -bB; }
+    else                                  { tx =  gG; ty =  bB; }
+    if (!tiltCal) { tilt0x = tx; tilt0y = ty; tiltCal = true; }
+    else { tilt0x += (tx - tilt0x) * .0009; tilt0y += (ty - tilt0y) * .0009; }
+    var dx = (tx - tilt0x) / 26, dy = (ty - tilt0y) / 26;
+    camTX = dx < -1 ? -1 : dx > 1 ? 1 : dx;
+    camTY = dy < -1 ? -1 : dy > 1 ? 1 : dy;
+    tiltOn = true;
+  }
+
+  var tiltTag = null;
+  function armTilt() {
+    addEventListener('deviceorientation', onTilt, { passive: true });
+    if (tiltTag) { tiltTag.remove(); tiltTag = null; }
+  }
+  if (!RM && !PARALLAX && typeof DeviceOrientationEvent !== 'undefined') {
+    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+      // iOS. Offer it rather than ambushing them with a system prompt, and
+      // keep the control out of the way of the tap that opens Seven Eyes.
+      tiltTag = document.createElement('button');
+      tiltTag.className = 'tilt-arm';
+      tiltTag.type = 'button';
+      tiltTag.textContent = 'TILT TO ORBIT';
+      tiltTag.addEventListener('click', function (ev) {
+        ev.stopPropagation(); ev.preventDefault();
+        DeviceOrientationEvent.requestPermission()
+          .then(function (r) { if (r === 'granted') armTilt(); else tiltTag.textContent = 'TILT DENIED'; })
+          .catch(function () { tiltTag.textContent = 'TILT UNAVAILABLE'; });
+      });
+      fieldEl0().appendChild(tiltTag);
+    } else {
+      armTilt();                       // Android and the rest just work
+    }
+  }
+  function fieldEl0() { return document.getElementById('field'); }
+
+  /* ── The performance ramp ─────────────────────────────────
+     -1 (deep loss) .. 0 (flat) .. +1 (strong gain)            */
+  var STOPS = [
+    [-1.00, 255,  45, 146],   // magenta
+    [-0.45, 255, 105, 175],   // rose
+    [ 0.00, 190, 214, 236],   // pale, inert
+    [ 0.45,   0, 240, 255],   // cyan
+    [ 1.00, 193, 255,  58]    // lime
+  ];
+  function rampRaw(t) {
+    t = Math.max(-1, Math.min(1, t));
+    for (var i = 0; i < STOPS.length - 1; i++) {
+      var a = STOPS[i], b = STOPS[i + 1];
+      if (t <= b[0]) {
+        var f = (t - a[0]) / (b[0] - a[0]);
+        return [
+          Math.round(a[1] + (b[1] - a[1]) * f),
+          Math.round(a[2] + (b[2] - a[2]) * f),
+          Math.round(a[3] + (b[3] - a[3]) * f)
+        ];
+      }
+    }
+    return [193, 255, 58];
+  }
+
+  /* Colours are looked up thousands of times a frame. Building a fresh
+     array and a fresh 'rgba(...)' string every time was handing the
+     garbage collector roughly three thousand objects per frame, which
+     is what turns a steady renderer into an occasionally stuttering
+     one. The ramp is now a fixed table and every colour carries its own
+     cache of alpha strings, so a lookup allocates nothing at all. */
+  function mkCol(r, g, b) { return { r: r, g: g, b: b, css: new Array(65) }; }
+  var RAMPN = 192, RAMPT = new Array(RAMPN + 1);
+  for (var ri = 0; ri <= RAMPN; ri++) {
+    var rc0 = rampRaw((ri / RAMPN) * 2 - 1);
+    RAMPT[ri] = mkCol(rc0[0], rc0[1], rc0[2]);
+  }
+  function ramp(t) {
+    return RAMPT[t <= -1 ? 0 : t >= 1 ? RAMPN : (((t + 1) * .5 * RAMPN) + .5) | 0];
+  }
+  function rgba(c, a) {
+    var ai = a <= 0 ? 0 : a >= 1 ? 64 : (a * 64 + .5) | 0;
+    return c.css[ai] || (c.css[ai] = 'rgba(' + c.r + ',' + c.g + ',' + c.b + ',' +
+                                     (ai / 64).toFixed(3) + ')');
+  }
+  var PALE = mkCol(190, 214, 236), MGC = mkCol(255, 45, 146), WHT = mkCol(255, 255, 255);
+
+  /* A hundred and four nucleons were each building their own radial
+     gradient every frame. Gradients are objects and building them is not
+     free, so they are pre-rendered once into a small atlas instead and
+     blitted. Twenty-four hue steps is far finer than the eye can follow
+     on a four pixel dot. */
+  var STARC = mkCol(214, 232, 248);
+  var SPRN = 24, SPRR = 40, SPR = new Array(SPRN + 1);
+  (function () {
+    for (var i = 0; i <= SPRN; i++) {
+      var col = i === SPRN ? MGC : RAMPT[Math.round((i / (SPRN - 1)) * RAMPN)];
+      var cv = document.createElement('canvas');
+      cv.width = cv.height = SPRR * 2;
+      var g = cv.getContext('2d');
+      var gr = g.createRadialGradient(SPRR, SPRR, 0, SPRR, SPRR, SPRR);
+      gr.addColorStop(0, 'rgba(255,255,255,1)');
+      gr.addColorStop(.55, 'rgba(' + col.r + ',' + col.g + ',' + col.b + ',.82)');
+      gr.addColorStop(1, 'rgba(' + col.r + ',' + col.g + ',' + col.b + ',0)');
+      g.fillStyle = gr;
+      g.fillRect(0, 0, SPRR * 2, SPRR * 2);
+      SPR[i] = cv;
+    }
+  })();
+
+  /* ── Starfield: cheap parallax depth behind everything ──── */
+  var STARS = 300, stars = [];
+  for (var si = 0; si < STARS; si++) {
+    stars.push({ x: qrand() * 2 - 1, y: qrand() * 2 - 1, d: .3 + qrand() * .7, f: .2 + qrand() * .8,
+                 tw: .35 + qrand() * 1.5, tp: qrand() * 6.28,   // its own twinkle
+                 hue: qrand() });                               // a few are not white
+  }
+
+  /* ── Core contents ───────────────────────────────────────── */
+  var NUCLEONS = 104, nucleons = [];
+  for (var n = 0; n < NUCLEONS; n++) {
+    var u = qrand() * 2 - 1, ph = qrand() * Math.PI * 2;
+    var rr = Math.cbrt(qrand()) * .92, sq = Math.sqrt(Math.max(0, 1 - u * u));
+    nucleons.push({
+      x: Math.cos(ph) * sq * rr, y: u * rr, z: Math.sin(ph) * sq * rr,
+      r: 1.5 + qrand() * 2.3,
+      tone: (n / (NUCLEONS - 1) + (qrand() - .5) * .12), // even spread across the ramp
+      jf: .5 + qrand() * 1.6, jp: qrand() * 6.28,
+      sat: qrand() > .55,                 // carries a satellite
+      sp: 1 + qrand() * 2.4, spp: qrand() * 6.28,
+      tf: .18 + qrand() * .55, tp: qrand() * 6.28,   // slow hue wander
+      fl: 0, flTone: 0                                // transient snap to another hue
+    });
+  }
+  function shell(count, spread) {
+    var out = [], ga = Math.PI * (3 - Math.sqrt(5));
+    for (var i = 0; i < count; i++) {
+      var y = 1 - (i / (count - 1)) * 2;
+      var r = Math.sqrt(Math.max(0, 1 - y * y)), th = ga * i * spread;
+      out.push({ x: Math.cos(th) * r, y: y, z: Math.sin(th) * r, f: .25 + qrand() * .75 });
+    }
+    return out;
+  }
+  var cloud = shell(430, 1), halo = shell(210, 1.7), mist = shell(150, 2.3);
+  var pulses = [];
+  function emitPulse() { pulses.push({ r: 0, a: 1 }); }
+
+  /* ══════════════════════════════════════════════════════════
+     QUALITY GOVERNOR
+     Unthrottled this renderer uses 1.8ms of a 16.6ms frame, so the
+     script is not the problem on a good machine. On a slow one the
+     cost is pixels: the canvas is drawn at up to twice the display
+     resolution, which is four times the fill. So watch the frame
+     clock and, if it keeps missing, rasterise less. Step back up
+     when it recovers. Hysteresis on both directions so it settles
+     instead of flapping.
+     ══════════════════════════════════════════════════════════ */
+  var QUAL = 3;                      // 3 full, 0 threadbare
+  var QDPR  = [1, 1.25, 1.5, 2];     // backing store cap per level
+  var QSHEL = [3, 2, 1, 1];          // draw every Nth shell point
+  var QSTAR = [.34, .55, .78, 1];    // fraction of the starfield
+  var QTICK = [0, 28, 56, 84];       // graduations on the outer ring
+  var frameEMA = 16.7, qGood = 0, qBad = 0;
+
+  function governor(ms) {
+    if (RM) return;
+    // While the nucleus is open it is meant to be expensive. Feeding that
+    // cost back in here let the bloom demote itself, and a demoted machine
+    // stops blooming, so it never got the chance to earn its way back.
+    if (psy > .002) { qBad = 0; return; }
+    frameEMA += (Math.min(ms, 100) - frameEMA) * .05;
+    if (frameEMA > 23 && QUAL > 0) {
+      if (++qBad > 45) { QUAL--; qBad = qGood = 0; frameEMA = 16.7; sizeAll(); }
+    } else qBad = 0;
+    if (frameEMA < 14 && QUAL < 3) {
+      if (++qGood > 240) { QUAL++; qGood = qBad = 0; frameEMA = 16.7; sizeAll(); }
+    } else qGood = 0;
+  }
+
+  function fit(cv) {
+    var d = Math.min(devicePixelRatio || 1, QDPR[QUAL]);
+    var w = cv.clientWidth, h = cv.clientHeight;
+    cv.width = Math.max(1, w * d); cv.height = Math.max(1, h * d);
+    var c = cv.getContext('2d');
+    c.setTransform(d, 0, 0, d, 0, 0);
+    return { c: c, w: w, h: h };
+  }
+
+  /* ── 3D ──────────────────────────────────────────────────── */
+  var OP = { x: 0, y: 0, z: 0 };
+  function orbitPoint(b, theta, dinc) {
+    var ci = b.ci, si = b.si;
+    if (dinc) { var ii = b.inc + dinc; ci = Math.cos(ii); si = Math.sin(ii); }
+    var ox = Math.cos(theta) * b.rad, oy = Math.sin(theta) * b.rad;
+    var y1 = oy * ci, z1 = oy * si;
+    var node = b.node + b.prec;                   // precession
+    var cn = Math.cos(node), sn = Math.sin(node);
+    OP.x = ox * cn + z1 * sn; OP.y = y1; OP.z = -ox * sn + z1 * cn;
+    return OP;
+  }
+  var cy_, sy_, cp_, sp_;
+  function setCam(yaw, pitch) {
+    cy_ = Math.cos(yaw); sy_ = Math.sin(yaw);
+    cp_ = Math.cos(pitch); sp_ = Math.sin(pitch);
+  }
+  /* Projection runs many thousands of times a frame. It used to be handed
+     a fresh object and hand one back, so the two of them together were the
+     single largest source of garbage in the renderer. It now writes into a
+     scratch record and returns that. Anything that needs to KEEP a result
+     past the next call has to copy it: see cpPt below. */
+  var PT = { x: 0, y: 0, z: 0, s: 0 };
+  var RTK = { rad: 0, ci: 1, si: 0, node: 0, prec: 0 };
+  function project3(px, py, pz, cx, cy, R) {
+    var x1 = px * cy_ - pz * sy_;
+    var z1 = px * sy_ + pz * cy_;
+    var y1 = py * cp_ - z1 * sp_;
+    var z2 = py * sp_ + z1 * cp_;
+    var persp = 1 / (2.5 - z2 * .85);
+    PT.x = cx + x1 * R * persp * 1.92;
+    PT.y = cy + y1 * R * persp * 1.92;
+    PT.z = z2; PT.s = persp;
+    return PT;
+  }
+  function project(p, cx, cy, R) { return project3(p.x, p.y, p.z, cx, cy, R); }
+  function cpPt(p) { return { x: p.x, y: p.y, z: p.z, s: p.s }; }
+
+  /* ── Bodies ──────────────────────────────────────────────── */
+  function makeBody(sym, pct, price, mag, norm, i, total) {
+    var inc = (-.62 + (i / Math.max(1, total - 1)) * 1.24) + (qrand() - .5) * .3;
+    return {
+      sym: sym, pct: pct, price: price, norm: norm,
+      col: ramp(norm),
+      rad: .64 + mag * .56,
+      sp: .16 + mag * .52,
+      th: qrand() * Math.PI * 2,
+      size: 1.9 + mag * 3.4,
+      dim: sym === null,
+      hot: 0, near: false,
+      inc: inc, ci: Math.cos(inc), si: Math.sin(inc),
+      node: qrand() * Math.PI * 2, prec: 0,
+      precSp: (qrand() - .5) * .09,
+      moon: false, moonTh: qrand() * 6.28,
+      wf: .5 + qrand() * 1.7, wp: qrand() * 6.28,
+      motes: [qrand() * 6.28, qrand() * 6.28, qrand() * 6.28, qrand() * 6.28, qrand() * 6.28],
+      trail: [], tlen: 10 + Math.round(mag * 24)
+    };
+  }
+  function idle() {
+    bodies = [];
+    for (var i = 0; i < 9; i++) {
+      bodies.push(makeBody(null, 0, null, .3 + qrand() * .35, (i % 2 ? -.35 : .35), i, 9));
+    }
+  }
+  idle();
+
+  function bind(rows) {
+    var max = Math.max(1.2, rows.reduce(function (m, r) { return Math.max(m, Math.abs(r.d.pct)); }, 0));
+    bodies = rows.map(function (r, i) {
+      var mag = Math.abs(r.d.pct) / max;
+      return makeBody(r.s, r.d.pct, r.d.price, mag, r.d.pct / max, i, rows.length);
+    });
+    // The three biggest movers each carry a moon.
+    bodies.slice().sort(function (a, b) { return Math.abs(b.pct) - Math.abs(a.pct); })
+      .slice(0, 3).forEach(function (b) { b.moon = true; });
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     RENDER
+     ══════════════════════════════════════════════════════════ */
+  function drawField(t, dt) {
+    var c = OG.c, W = OG.w, H = OG.h;
+    var cx = W * .5, cy = H * .5;
+    var R = Math.min(W * .40, H * .48);
+    c.clearRect(0, 0, W, H);
+
+    if (warping) {
+      var zp = Math.min(1, (t * 1000 - zoomT0) / 850);
+      zoom = zp * zp * zp;
+      R *= 1 + zoom * 22;
+      warpEl.style.opacity = Math.max(0, (zp - .55) / .45).toFixed(3);
+    }
+
+    camX = lerp(camX, camTX, .045);
+    camY = lerp(camY, camTY, .045);
+    setCam(camX * .85 + spin, -.34 + camY * .55);
+    spin += dt * .05; coreRot += dt * .12; sweep += dt * .55;
+    ringPh += dt * .21; ring.node += dt * .075;
+    ring.inc = -1.12 + Math.sin(t * .105) * .34;
+    ring.ci = Math.cos(ring.inc); ring.si = Math.sin(ring.inc);
+    cx += camX * 22; cy += camY * 12;
+
+    /* ── Bloom scheduling ─────────────────────────────────
+       psyT is where it wants to be, psy walks there over 1.5s so
+       it can never snap. psyPeak is the ceiling volatility allows. */
+    if (RM || warping) { psy = psyT = 0; dwell = 0; dwellOn = false; }
+    else {
+      // Dwell: rest the pointer on the very centre and it opens.
+      if (PARALLAX && hoverX > -9000) {
+        var ddx = hoverX - W * .5, ddy = hoverY - H * .5;
+        var atCore = Math.hypot(ddx, ddy) < R * .34;
+        var still = Math.abs(hoverX - lastHX) < 7 && Math.abs(hoverY - lastHY) < 7;
+        dwell = (atCore && still) ? dwell + dt : 0;
+        lastHX = hoverX; lastHY = hoverY;
+      } else dwell = 0;
+      dwellOn = dwell > 1.1;
+
+      if (dwellOn) { psyT = 1; psyPeak = 1; }
+      else if (psyT > 0) { psyHold -= dt; if (psyHold <= 0) psyT = 0; }
+      else {
+        psyNext -= dt;
+        if (psyNext <= 0) {
+          psyT = 1;
+          psyPeak = .55 + charge * .45;              // volatility sets the ceiling
+          psyHold = 6 + Math.random() * 4;
+          psyNext = (42 + Math.random() * 34) / (.6 + charge);   // and the spacing
+          log('GEOMETRY UNBOUND / NUCLEUS OFF LEASH');
+        }
+      }
+      var step = dt / 1.5;                            // full travel takes 1.5s
+      psy += Math.max(-step, Math.min(step, psyT - psy));
+    }
+
+    var hot = fieldHot ? 1 : 0;
+    var accent = hot ? '255,45,146' : '0,240,255';
+    var fade = 1 - zoom;
+
+    /* ── 1. Starfield ────────────────────────────────────── */
+    var nStars = (stars.length * QSTAR[QUAL]) | 0;
+    for (var s0 = 0; s0 < nStars; s0++) {
+      var st = stars[s0];
+      var sx = cx + (st.x * W * .62) - camX * 34 * st.d;
+      var sy2 = cy + (st.y * H * .62) - camY * 20 * st.d;
+      // Twinkle: a slow beat with a faster one folded in, so no two agree.
+      var tw = RM ? .68 : .5 + (Math.sin(t * st.tw + st.tp) * .5 + .5) * .5
+                        + Math.sin(t * st.tw * 3.7 + st.tp * 2) * .12;
+      var a3 = Math.max(0, (.16 + st.f * .40 * st.d) * tw) * fade;
+      // Most are cold white; a scattered few pick up the ramp.
+      c.fillStyle = rgba(st.hue > .84 ? ramp(st.hue * 6 - 5.1) : STARC, a3);
+      var ss = (st.d < .55 ? 1 : 1.5) + (tw > .92 ? .8 : 0);
+      c.fillRect(sx, sy2, ss, ss);
+      if (tw > .96 && st.d > .55) {          // the brightest moments spike
+        c.fillRect(sx - 2, sy2 + ss / 2 - .5, ss + 4, 1);
+        c.fillRect(sx + ss / 2 - .5, sy2 - 2, 1, ss + 4);
+      }
+    }
+
+    /* ── 2. Scaffold ─────────────────────────────────────── */
+    var sqz = .30 + camY * .16;
+    c.save(); c.translate(cx, cy);
+    [[1.30,.16,.13,2.1],[1.44,.10,-.09,1.4],[1.18,.13,.21,.9],[1.56,.07,-.05,2.6]]
+      .forEach(function (g, gi) {
+        var a0 = t * g[2] + gi * 1.7;
+        c.strokeStyle = 'rgba(' + accent + ',' + ((g[1] + hot * .1) * fade).toFixed(3) + ')';
+        c.lineWidth = 1;
+        c.beginPath(); c.ellipse(0, 0, R * g[0], R * g[0] * sqz, 0, a0, a0 + g[3]); c.stroke();
+        c.beginPath(); c.ellipse(0, 0, R * g[0], R * g[0] * sqz, 0, a0 + Math.PI, a0 + Math.PI + g[3] * .6); c.stroke();
+      });
+    c.restore();
+
+    /* ── The outer ring, revolving and tumbling ──────────── */
+    c.lineWidth = 1;
+    var rp = [];
+    for (var rk = 0; rk <= 128; rk++) rp.push(cpPt(project(orbitPoint(ring, rk / 128 * Math.PI * 2), cx, cy, R)));
+    for (var rj = 1; rj <= 128; rj++) {
+      var pA = rp[rj - 1], pB = rp[rj];
+      var dep2 = (pA.z + pB.z) * .5;
+      c.strokeStyle = 'rgba(' + accent + ',' + (((dep2 < 0 ? .08 : .26) + hot * .10) * fade).toFixed(3) + ')';
+      c.beginPath(); c.moveTo(pA.x, pA.y); c.lineTo(pB.x, pB.y); c.stroke();
+    }
+
+    // Graduations revolve around the ring independently of the tumble.
+    // Only two tick styles exist, so build their colours once rather than
+    // once per tick.
+    var tkBack  = 'rgba(' + accent + ',' + ((.10 + hot * .14) * fade).toFixed(3) + ')';
+    var tkFront = 'rgba(' + accent + ',' + ((.34 + hot * .14) * fade).toFixed(3) + ')';
+    var nTk = QTICK[QUAL];
+    for (var rt = 0; rt < nTk; rt++) {
+      var rth = rt / nTk * Math.PI * 2 + ringPh;
+      // project3 returns a shared scratch record, so these have to be read
+      // out before the next call overwrites them.
+      var tp0 = project(orbitPoint(ring, rth), cx, cy, R);
+      var tkx = tp0.x, tky = tp0.y, tkz = tp0.z;
+      var maj = rt % 7 === 0;
+      // Outward along the ring's own plane, not the screen's, so the
+      // graduations lie flat on it as it tumbles.
+      RTK.rad = ring.rad * (maj ? 1.075 : 1.032);
+      RTK.ci = ring.ci; RTK.si = ring.si; RTK.node = ring.node;
+      var outer = project(orbitPoint(RTK, rth), cx, cy, R);
+      c.strokeStyle = tkz < 0 ? tkBack : tkFront;
+      c.beginPath();
+      c.moveTo(tkx, tky);
+      c.lineTo(outer.x, outer.y);
+      c.stroke();
+    }
+
+    // Two brackets ride the ring, a half turn apart.
+    c.lineWidth = 1.4;
+    c.strokeStyle = 'rgba(' + accent + ',' + ((.40 + hot * .3) * fade).toFixed(3) + ')';
+    [0, Math.PI].forEach(function (o) {
+      c.beginPath();
+      for (var bq = 0; bq <= 14; bq++) {
+        var bp = project(orbitPoint(ring, o - ringPh * .6 - .30 + bq / 14 * .60), cx, cy, R);
+        bq === 0 ? c.moveTo(bp.x, bp.y) : c.lineTo(bp.x, bp.y);
+      }
+      c.stroke();
+    });
+    c.lineWidth = 1;
+
+    /* ── Shockwaves ──────────────────────────────────────── */
+    for (var pz = pulses.length - 1; pz >= 0; pz--) {
+      var pu = pulses[pz];
+      pu.r += dt * 1.15; pu.a -= dt * .62;
+      if (pu.a <= 0) { pulses.splice(pz, 1); continue; }
+      c.save(); c.translate(cx, cy);
+      c.strokeStyle = 'rgba(' + accent + ',' + (pu.a * .30 * fade).toFixed(3) + ')';
+      c.lineWidth = 1;
+      c.beginPath(); c.ellipse(0, 0, R * pu.r * 1.5, R * pu.r * 1.5 * sqz, 0, 0, Math.PI * 2); c.stroke();
+      c.restore();
+    }
+    if (!RM && qrand() < dt * .22) emitPulse();
+
+    /* ── 3. Advance bodies ───────────────────────────────── */
+    var drawn = [];
+    for (var i = 0; i < bodies.length; i++) {
+      var b = bodies[i];
+      var rate = RM ? 1 : 1 + Math.sin(t * b.wf + b.wp) * .22;
+      b.th += dt * b.sp * rate;
+      b.prec += dt * b.precSp;
+      b.moonTh += dt * 2.6;
+      var pt = project(orbitPoint(b, b.th), cx, cy, R);
+      b.px = pt.x; b.py = pt.y; b.pz = pt.z; b.ps = pt.s;
+      b.trail.push({ x: pt.x, y: pt.y });
+      if (b.trail.length > b.tlen) b.trail.shift();
+
+      var ang = Math.atan2(b.py - cy, b.px - cx);
+      var d0 = ((sweep - ang) % 6.2832 + 6.2832) % 6.2832;
+      if (d0 < .34) b.hot = 1;
+      b.hot = Math.max(0, b.hot - dt * 1.6);
+      b.near = Math.abs(hoverX - b.px) < 24 && Math.abs(hoverY - b.py) < 20;
+      drawn.push(b);
+    }
+    hoverBody = drawn.filter(function (x) { return x.near && x.sym; })[0] || null;
+
+    /* ── 4. Spokes + probability haze + tracks (behind) ──── */
+    c.lineWidth = 1;
+    drawn.forEach(function (b) {
+      var col = b.dim ? PALE : b.col;
+      c.strokeStyle = rgba(col, ((b.pz < 0 ? .035 : .075) + b.hot * .10) * fade);
+      c.beginPath(); c.moveTo(cx, cy); c.lineTo(b.px, b.py); c.stroke();
+    });
+
+    function strand(b, behind, dinc, alpha, col) {
+      c.beginPath();
+      var started = false;
+      for (var q = 0; q <= 76; q++) {
+        var pp = project(orbitPoint(b, q / 76 * Math.PI * 2, dinc), cx, cy, R);
+        if ((pp.z < 0) !== behind) { started = false; continue; }
+        if (!started) { c.moveTo(pp.x, pp.y); started = true; } else c.lineTo(pp.x, pp.y);
+      }
+      c.strokeStyle = rgba(col, alpha);
+      c.stroke();
+    }
+
+    function track(b, behind) {
+      var col = b.dim ? PALE : b.col;
+      c.lineWidth = 1;
+      var lit = ((behind ? .08 : .20) + (b.near ? .30 : 0) + b.hot * .14) * fade;
+
+      // A band, not a wire: two ghost strands either side of the true path,
+      // breathing slowly so the shell reads as a region of probability.
+      var spread = .050 + Math.sin(t * .34 + b.node) * .022;
+      strand(b, behind, -spread, lit * .30, col);
+      strand(b, behind,  spread, lit * .30, col);
+      strand(b, behind, 0, lit, col);
+
+      if (behind || b.dim) return;
+
+      // Period ticks: 24 fine marks, every sixth raised into a longer spur.
+      for (var m = 0; m < 24; m++) {
+        var th0 = m / 24 * Math.PI * 2;
+        var tp = project(orbitPoint(b, th0), cx, cy, R);
+        if (tp.z < 0) continue;
+        var major = m % 6 === 0;
+        var vx = tp.x - cx, vy = tp.y - cy;
+        var vl = Math.hypot(vx, vy) || 1;
+        var len = major ? 4.2 : 1.8;
+        c.strokeStyle = rgba(col, (major ? .30 : .15) * fade);
+        c.beginPath();
+        c.moveTo(tp.x, tp.y);
+        c.lineTo(tp.x + vx / vl * len, tp.y + vy / vl * len);
+        c.stroke();
+      }
+
+      // The ascending node, where the orbit crosses the reference plane.
+      var np = project(orbitPoint(b, 0), cx, cy, R);
+      if (np.z >= 0) {
+        c.strokeStyle = rgba(col, .40 * fade);
+        c.beginPath(); c.arc(np.x, np.y, 3.1, 0, Math.PI * 2); c.stroke();
+      }
+
+      // Dust riding the same track, well ahead and behind the body.
+      for (var mo = 0; mo < b.motes.length; mo++) {
+        var mp = project(orbitPoint(b, b.th + b.motes[mo]), cx, cy, R);
+        if (mp.z < 0) continue;
+        c.fillStyle = rgba(col, (.16 + mp.s * .30) * fade);
+        var ms = .7 + mp.s * 1.3;
+        c.fillRect(mp.x - ms / 2, mp.y - ms / 2, ms, ms);
+      }
+    }
+    drawn.forEach(function (b) { track(b, true); });
+
+    drawn.filter(function (x) { return x.pz < 0; })
+         .sort(function (p, q) { return p.pz - q.pz; })
+         .forEach(function (b) { paintBody(c, b, true, fade); });
+
+    /* ── 5. The core, as nested shells ───────────────────── */
+    var CR = R * .54;
+    var pulse = .74 + Math.sin(t * 2.2) * .16;
+
+    // temperature bloom: white centre through lime, cyan, magenta
+    var g2 = c.createRadialGradient(cx, cy, 0, cx, cy, CR * 1.5);
+    g2.addColorStop(0,   'rgba(255,255,255,' + Math.min(1, .25 * pulse * (.5 + charge * .5) + zoom * .5).toFixed(3) + ')');
+    g2.addColorStop(.16, 'rgba(193,255,58,'  + (.115 * pulse * fade).toFixed(3) + ')');
+    g2.addColorStop(.40, 'rgba(0,240,255,'   + (.095 * pulse * fade).toFixed(3) + ')');
+    g2.addColorStop(.72, 'rgba(255,45,146,'  + (.062 * pulse * fade).toFixed(3) + ')');
+    g2.addColorStop(1,   'rgba(255,45,146,0)');
+    c.fillStyle = g2;
+    c.beginPath(); c.arc(cx, cy, CR * 1.5, 0, Math.PI * 2); c.fill();
+
+    var scy = Math.sin(coreRot), scx = Math.cos(coreRot);
+    function paintShell(pts, rad, rot, tone, base) {
+      var rc = Math.cos(rot), rs = Math.sin(rot);
+      var col = fieldHot ? MGC : ramp(tone);      // constant for the whole shell
+      var sk = QSHEL[QUAL];
+      for (var q = 0; q < pts.length; q += sk) {
+        var p = pts[q];
+        var wx = p.x * rc - p.z * rs, wz = p.x * rs + p.z * rc;
+        var pp = project3(wx * rad, p.y * rad, wz * rad, cx, cy, CR);
+        var dep = (pp.z + 1.4) / 2.8;
+        var a2 = (base + dep * base * 2.4) * p.f * fade;
+        c.fillStyle = dep > .74 ? rgba(WHT, a2 * 1.2) : rgba(col, a2);
+        var sz = .6 + dep * 1.3;
+        c.fillRect(pp.x - sz / 2, pp.y - sz / 2, sz, sz);
+      }
+    }
+    var drift = RM ? 0 : 1;
+    paintShell(cloud, 1.28, coreRot,       .55 + Math.sin(t * .21) * .42 * drift, .05);
+    paintShell(halo,  1.62, -coreRot * .7, .95 + Math.sin(t * .16 + 2.1) * .55 * drift, .03);
+    paintShell(mist,  1.86, coreRot * .45, -.60 + Math.sin(t * .13 + 4.2) * .38 * drift, .022);
+
+    // lat / long wireframe
+    c.strokeStyle = 'rgba(' + accent + ',' + (.10 * fade).toFixed(3) + ')';
+    c.lineWidth = 1;
+    for (var la = -2; la <= 2; la++) {
+      var lat = la * .42;
+      c.beginPath();
+      for (var lo = 0; lo <= 40; lo++) {
+        var an = lo / 40 * Math.PI * 2 + coreRot;
+        var pw = project3(Math.cos(an) * Math.cos(lat) * 1.3, Math.sin(lat) * 1.3, Math.sin(an) * Math.cos(lat) * 1.3, cx, cy, CR);
+        if (pw.z < -.1) { c.moveTo(pw.x, pw.y); continue; }
+        lo === 0 ? c.moveTo(pw.x, pw.y) : c.lineTo(pw.x, pw.y);
+      }
+      c.stroke();
+    }
+
+    // nucleons, depth sorted, each with an optional satellite
+    var nd = [];
+    for (var q3 = 0; q3 < nucleons.length; q3++) {
+      var nu = nucleons[q3];
+      var jit = Math.sin(t * nu.jf + nu.jp) * .05;
+      var wx3 = nu.x * scx - nu.z * scy, wz3 = nu.x * scy + nu.z * scx;
+      nd.push({ p: cpPt(project3(wx3 * (1 + jit), nu.y * (1 + jit), wz3 * (1 + jit), cx, cy, CR)), n: nu });
+    }
+    nd.sort(function (p, q) { return p.p.z - q.p.z; });
+    nd.forEach(function (o) {
+      var dep = (o.p.z + 1.2) / 2.4;
+
+      // The cluster never settles on a palette. Each nucleon wanders a
+      // little either side of its own tone, and now and then one snaps
+      // clean across the ramp before easing back.
+      var tone = o.n.tone;
+      if (!RM) {
+        tone += Math.sin(t * o.n.tf + o.n.tp) * .17;
+        if (o.n.fl > 0) {
+          o.n.fl -= dt * 1.7;
+          tone = tone + (o.n.flTone - tone) * Math.max(0, Math.min(1, o.n.fl));
+        } else if (Math.random() < dt * .55) {
+          o.n.fl = 1; o.n.flTone = Math.random();
+        }
+        tone = tone < 0 ? -tone : tone > 1 ? 2 - tone : tone;
+      }
+      var col = fieldHot ? MGC : ramp(tone * 2 - 1);
+      var rad = o.n.r * o.p.s * 3.5;
+      var lift = 1 + (1 - Math.abs(tone * 2 - 1)) * .35;   // pale ones need help
+      var si = fieldHot ? SPRN : (tone * (SPRN - 1) + .5) | 0;
+      c.globalAlpha = Math.min(1, (.34 + dep * .52) * lift * fade);
+      c.drawImage(SPR[si < 0 ? 0 : si > SPRN ? SPRN : si],
+                  o.p.x - rad, o.p.y - rad, rad * 2, rad * 2);
+      c.globalAlpha = 1;
+      if (o.n.sat && dep > .5) {
+        var sa = t * o.n.sp + o.n.spp, sr = rad * 2.1;
+        c.fillStyle = rgba(col, .5 * fade);
+        c.fillRect(o.p.x + Math.cos(sa) * sr - .7, o.p.y + Math.sin(sa) * sr * .5 - .7, 1.4, 1.4);
+      }
+    });
+
+    // energy arcs between nearby nucleons
+    if (!RM) {
+      c.lineWidth = 1;
+      for (var ea = 0; ea < 6; ea++) {
+        var i1 = Math.floor(Math.random() * nd.length), i2 = Math.floor(Math.random() * nd.length);
+        if (i1 === i2) continue;
+        var p1 = nd[i1].p, p2 = nd[i2].p;
+        var dd = Math.hypot(p1.x - p2.x, p1.y - p2.y);
+        if (dd > CR * .85 || dd < 4) continue;
+        c.strokeStyle = 'rgba(255,255,255,' + ((.05 + Math.random() * .16) * fade).toFixed(3) + ')';
+        c.beginPath();
+        c.moveTo(p1.x, p1.y);
+        c.quadraticCurveTo((p1.x + p2.x) / 2 + (Math.random() - .5) * 12,
+                           (p1.y + p2.y) / 2 + (Math.random() - .5) * 12, p2.x, p2.y);
+        c.stroke();
+      }
+    }
+
+    c.fillStyle = 'rgba(255,255,255,' + (.85 * pulse).toFixed(3) + ')';
+    c.shadowColor = 'rgba(' + accent + ',.9)'; c.shadowBlur = 14;
+    c.beginPath(); c.arc(cx, cy, 2.1 + pulse, 0, Math.PI * 2); c.fill();
+    c.shadowBlur = 0;
+
+    /* ── 6. In front ─────────────────────────────────────── */
+    drawn.forEach(function (b) { track(b, false); });
+    drawn.filter(function (x) { return x.pz >= 0; })
+         .sort(function (p, q) { return p.pz - q.pz; })
+         .forEach(function (b) { paintBody(c, b, false, fade); });
+
+    /* ── 7. Overlay: constellation, sweep, labels ────────── */
+    var big = drawn.filter(function (x) { return x.sym; })
+      .sort(function (p, q) { return Math.abs(q.pct) - Math.abs(p.pct); }).slice(0, 3);
+    if (big.length === 3) {
+      c.setLineDash([2, 4]);
+      c.strokeStyle = 'rgba(' + accent + ',' + (.20 * fade).toFixed(3) + ')';
+      c.lineWidth = 1;
+      c.beginPath();
+      c.moveTo(big[0].px, big[0].py);
+      c.lineTo(big[1].px, big[1].py);
+      c.lineTo(big[2].px, big[2].py);
+      c.closePath(); c.stroke();
+      c.setLineDash([]);
+    }
+
+    if (!RM) {
+      c.save(); c.translate(cx, cy); c.rotate(sweep);
+      var sg = c.createLinearGradient(0, 0, R * 1.7, 0);
+      sg.addColorStop(0, 'rgba(255,184,0,0)');
+      sg.addColorStop(1, 'rgba(255,184,0,' + (.20 * fade).toFixed(3) + ')');
+      c.strokeStyle = sg; c.lineWidth = 1;
+      c.beginPath(); c.moveTo(0, 0); c.lineTo(R * 1.7, 0); c.stroke();
+      c.restore();
+    }
+
+    c.font = '9px "JetBrains Mono", monospace';
+    c.textAlign = 'left';
+    drawn.forEach(function (b) {
+      if (!b.sym) return;
+      var front = b.pz >= 0;
+      if (!front && !b.near) return;
+      var col = b.col;
+      var out = 13 + b.size;
+      var lx = b.px + out, ly = b.py - out * .7;
+      c.strokeStyle = rgba(col, (b.near ? .6 : .26) * fade);
+      c.lineWidth = 1;
+      c.beginPath(); c.moveTo(b.px, b.py); c.lineTo(lx - 3, ly + 3); c.lineTo(lx + 16, ly + 3); c.stroke();
+      c.fillStyle = 'rgba(232,232,242,' + ((b.near ? .99 : .84) * fade).toFixed(3) + ')';
+      c.fillText(b.sym, lx, ly);
+      if (b.near) {
+        c.fillStyle = rgba(col, .98);
+        c.fillText(pctf(b.pct) + '  ' + money(b.price), lx, ly + 12);
+      }
+    });
+
+    if (psy > .002) bloomPass(c, t, smooth(psy) * psyPeak, W, H, cx, cy);
+
+  }
+
+  function smooth(x) { return x * x * (3 - 2 * x); }
+
+  /* ══════════════════════════════════════════════════════════
+     BLOOM PASS
+     Works on a snapshot of the finished frame, so the renderer
+     above never has to know this exists. Composed at half
+     resolution and upscaled: a quarter of the fill for a glow
+     nobody can tell was cheated.
+     ══════════════════════════════════════════════════════════ */
+  function bloomPass(c, t, I, W, H, cx, cy) {
+    var d = Math.min(devicePixelRatio || 1, 2);
+    var SCALE = QUAL >= 3 ? .42 : QUAL === 2 ? .34 : QUAL === 1 ? .28 : .22;  // every pass pays this
+    var bw = Math.max(2, Math.round(W * d * SCALE)), bh = Math.max(2, Math.round(H * d * SCALE));
+    if (!pbufA) { pbufA = document.createElement('canvas'); pbufB = document.createElement('canvas'); }
+    if (pbufA.width !== bw || pbufA.height !== bh) {
+      pbufA.width = bw; pbufA.height = bh; pbufB.width = bw; pbufB.height = bh;
+    }
+    var ca = pbufA.getContext('2d'), cb = pbufB.getContext('2d');
+    var bx = cx * (bw / W), by = cy * (bh / H);
+    var RMAX = Math.hypot(bw, bh);
+
+    function reset(x) {
+      x.setTransform(1, 0, 0, 1, 0, 0);
+      x.globalCompositeOperation = 'source-over';
+      x.globalAlpha = 1; x.filter = 'none';
+    }
+
+    // Snapshot the clean frame.
+    reset(ca); ca.clearRect(0, 0, bw, bh);
+    ca.drawImage(oCv, 0, 0, oCv.width, oCv.height, 0, 0, bw, bh);
+
+    /* ── 1 + 2. True kaleidoscope, each wedge on its own hue ──
+       One wedge of the source is reflected into all N. Rotating the
+       whole atom additively would only smear it into a ball, because
+       the atom is already radially symmetric: it is the clipping and
+       the mirroring that make petals. Hue spread is narrow enough to
+       sit inside the ramp at low intensity and opens to a full turn
+       at the peak, where the palette stops applying. */
+    var N = Math.round((QUAL >= 2 ? 6 : 4) + I * (QUAL >= 2 ? 4 : QUAL === 1 ? 2 : 2));
+    var step = Math.PI * 2 / N;
+    var span = 40 + I * 320;
+    var spin0 = t * .13;                    // 0.02 Hz
+    var hueDrift = t * 18;                  // 0.05 Hz
+    var pick = Math.sin(t * .09) * .7;      // which slice of the source feeds it
+    reset(cb); cb.clearRect(0, 0, bw, bh);
+    for (var i = 0; i < N; i++) {
+      cb.save();
+      cb.translate(bx, by);
+      cb.rotate(i * step + spin0);
+      cb.beginPath();
+      cb.moveTo(0, 0);
+      cb.arc(0, 0, RMAX, -step * .5, step * .5);
+      cb.closePath();
+      cb.clip();
+      if (i % 2) cb.scale(1, -1);           // reflect every other wedge
+      cb.rotate(pick);
+      if (CAN_FILTER) {
+        cb.filter = 'hue-rotate(' + (((i / N) * span + hueDrift) % 360).toFixed(1) +
+                    'deg) saturate(' + (1 + I * 1.1).toFixed(2) + ')';
+      }
+      cb.drawImage(pbufA, -bx, -by);
+      cb.restore();
+    }
+
+    /* ── 3. Recursive nesting ──────────────────────────────
+       Read from A, write to B: a canvas cannot safely blit into
+       itself. */
+    reset(ca); ca.clearRect(0, 0, bw, bh); ca.drawImage(pbufB, 0, 0);
+    var LV = QUAL === 0 ? 2 : Math.round(3 + I * 2);
+    cb.globalCompositeOperation = 'lighter';
+    for (var k = 1; k <= LV; k++) {
+      var sc = Math.pow(.52, k);
+      cb.save();
+      cb.translate(bx, by);
+      cb.rotate(spin0 * (k % 2 ? -1.7 : 1.3) + k * .4);
+      cb.scale(sc, sc);
+      cb.globalAlpha = Math.min(1, (.45 / k) * I);
+      cb.drawImage(pbufA, -bx, -by);
+      cb.restore();
+    }
+    reset(cb);
+
+    /* ── 4. Hyperbolic swim, B back into A ─────────────────
+       Concentric annuli each at their own warped radius, so the
+       field curves rather than merely scaling. Done at half
+       resolution: the same pass at full size costs four times as
+       much and looks no different once it is glowing. */
+    reset(ca); ca.clearRect(0, 0, bw, bh);
+    ca.globalCompositeOperation = 'lighter';
+    var RINGS = QUAL >= 2 ? 7 : QUAL === 1 ? 4 : 3, amp = .085 * I, kk = 9, w = t * 1.6;   // 0.25 Hz
+    for (var r0 = 0; r0 < RINGS; r0++) {
+      var f0 = r0 / RINGS, f1 = (r0 + 1) / RINGS;
+      var warp = 1 + amp * Math.sin(kk * f0 - w);
+      ca.save();
+      ca.beginPath();
+      ca.arc(bx, by, f1 * RMAX, 0, Math.PI * 2);
+      ca.arc(bx, by, f0 * RMAX, 0, Math.PI * 2, true);
+      ca.clip();
+      ca.translate(bx, by); ca.scale(warp, warp); ca.translate(-bx, -by);
+      ca.drawImage(pbufB, 0, 0);
+      ca.restore();
+    }
+
+    /* ── 5. Lattice, straight onto A ───────────────────────── */
+    ca.globalCompositeOperation = 'lighter';
+    ca.strokeStyle = 'rgba(0,240,255,' + (.07 * I).toFixed(3) + ')';
+    ca.lineWidth = 1;
+    var gs = 26 * d, amp2 = 5 * I * d;
+    for (var pass = 0; pass < (QUAL >= 2 ? 3 : QUAL === 1 ? 1 : 0); pass++) {
+      var sk = pass === 0 ? 0 : (pass === 1 ? .58 : -.58);
+      for (var gy = -bh; gy <= bh * 2; gy += gs) {
+        ca.beginPath();
+        for (var gx = 0; gx <= bw + gs; gx += gs) {
+          var yy = gy + gx * sk
+                 + Math.sin(gx * .02 + t * .9) * amp2
+                 + Math.cos(gy * .022 - t * .7) * amp2;
+          gx === 0 ? ca.moveTo(gx, yy) : ca.lineTo(gx, yy);
+        }
+        ca.stroke();
+      }
+    }
+    reset(ca);
+
+    /* ── Dissolution, then one upscale ─────────────────────
+       The instrument fades out under the geometry, and the whole
+       composite lands in a single full-resolution draw. */
+    c.save();
+    c.globalCompositeOperation = 'source-over';
+    c.fillStyle = 'rgba(0,0,0,' + (I * .55).toFixed(3) + ')';
+    c.fillRect(0, 0, W, H);
+    c.globalCompositeOperation = 'source-over';
+    c.globalAlpha = Math.min(1, I * 1.1);
+    c.drawImage(pbufA, 0, 0, bw, bh, 0, 0, W, H);
+    c.restore();
+  }
+
+  function paintBody(c, b, behind, fade) {
+    var col = b.dim ? PALE : b.col;
+    c.lineWidth = 1;
+    for (var s2 = 1; s2 < b.trail.length; s2++) {
+      var f2 = s2 / b.trail.length;
+      c.strokeStyle = rgba(col, (f2 * (behind ? .10 : .30) * (b.dim ? .5 : 1) + b.hot * .10) * fade);
+      c.beginPath();
+      c.moveTo(b.trail[s2 - 1].x, b.trail[s2 - 1].y);
+      c.lineTo(b.trail[s2].x, b.trail[s2].y);
+      c.stroke();
+    }
+    var alpha = (behind ? .34 : .95) * (b.dim ? .5 : 1);
+    var sz = b.size * b.ps * 1.5 * (b.near ? 1.7 : 1) * (1 + b.hot * .5);
+    c.fillStyle = rgba(col, Math.min(1, alpha + b.hot * .4) * fade);
+    c.shadowColor = rgba(col, .9); c.shadowBlur = b.near ? 16 : (behind ? 2 : 8 + b.hot * 10);
+    c.beginPath(); c.arc(b.px, b.py, Math.max(.8, sz), 0, Math.PI * 2); c.fill();
+    c.shadowBlur = 0;
+
+    if (b.moon && !behind) {
+      var mr = sz * 3.4;
+      c.fillStyle = rgba(col, .55 * fade);
+      c.fillRect(b.px + Math.cos(b.moonTh) * mr - .9, b.py + Math.sin(b.moonTh) * mr * .55 - .9, 1.8, 1.8);
+    }
+
+    var flare = (b.size > 3.4 ? .5 : 0) + b.hot * .8 + (b.near ? .6 : 0);
+    if (!behind && flare > .25 && FLARE) {
+      var L = sz * (4 + flare * 7);
+      c.strokeStyle = rgba(col, Math.min(.75, flare * .5) * fade);
+      c.lineWidth = 1;
+      c.beginPath();
+      c.moveTo(b.px - L, b.py); c.lineTo(b.px + L, b.py);
+      c.moveTo(b.px, b.py - L * .55); c.lineTo(b.px, b.py + L * .55);
+      c.stroke();
+    }
+  }
+
+  /* ── Field interaction ───────────────────────────────────── */
+  var fieldEl = $('field'), warpEl = $('warp');
+  function engageSeven() {
+    if (warping) return;
+    log('SEVEN EYES PROTOCOL / HANDING OFF', 'dn');
+    if (RM) { location.href = 'seven-eyes-protocol.html'; return; }
+    warping = true;
+    zoomT0 = performance.now();
+    document.querySelector('.hud').classList.add('warping');
+    setTimeout(function () { location.href = 'seven-eyes-protocol.html'; }, 860);
+  }
+  oCv.addEventListener('pointermove', function (e) {
+    var r = oCv.getBoundingClientRect();
+    hoverX = e.clientX - r.left; hoverY = e.clientY - r.top;
+  });
+  fieldEl.addEventListener('pointerenter', function () { fieldHot = true; });
+  fieldEl.addEventListener('pointerleave', function () { fieldHot = false; hoverX = hoverY = -9999; });
+  fieldEl.addEventListener('click', engageSeven);
+  fieldEl.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); engageSeven(); }
+  });
+  fieldEl.addEventListener('focus', function () { fieldHot = true; });
+  fieldEl.addEventListener('blur', function () { fieldHot = false; });
+
+  // Returning via bfcache restores this page exactly as frozen, which after
+  // a warp is mid-flight with the chrome hidden. Reset on every show.
+  addEventListener('pageshow', function () {
+    warping = false; zoom = 0; last = null;
+    psy = psyT = 0; dwell = 0; dwellOn = false;
+    var hudEl = document.querySelector('.hud');
+    if (hudEl) hudEl.classList.remove('warping');
+    if (warpEl) warpEl.style.opacity = 0;
+  });
+
+
+  /* ── VITALS ──────────────────────────────────────────────── */
+  var wCv = $('wave'), WG = null;
+  var TABLE = (function () {
+    var C = [[0,0],[.09,0],[.11,.05],[.14,.13],[.18,.04],[.21,0],[.32,0],[.35,-.06],
+             [.37,.10],[.375,1],[.405,1],[.415,0],[.425,-.26],[.455,0],[.52,0],
+             [.58,.04],[.67,.20],[.77,.04],[.84,0],[1,0]];
+    var N = 600, t = new Float32Array(N);
+    for (var i = 0; i < N; i++) {
+      var p = i / N, j = 0;
+      while (j < C.length - 2 && C[j + 1][0] <= p) j++;
+      var mu = (p - C[j][0]) / (C[j + 1][0] - C[j][0]);
+      var m2 = (1 - Math.cos(mu * Math.PI)) / 2;
+      t[i] = C[j][1] * (1 - m2) + C[j + 1][1] * m2;
+    }
+    return t;
+  })();
+  var PXB = 92, wbuf = null, wph = 0, wac = 0;
+  /* The strip is not just a trace any more, it is a record. Every beat is
+     drawn as a waveform behind the trace: cyan for the structure of it,
+     leaving lime to the beat itself. */
+  var wenv = null;
+  var mPh = 0, mHit = 0;                   // the waveform's own clock
+  var WAVEC = mkCol(255, 45, 146);         // the track behind, the heart in front
+  // Resting pulse wanders inside 70..110 forever. A single fixed target
+  // just converges and then sits there looking broken.
+  var BPM_MIN = 70, BPM_MAX = 110;
+  var bpm = 82, targetBpm = 82, bpmCentre = 84;
+  var bpmEl = $('bpm'), lastBpm = -1;
+  (function wander() {
+    var t = bpmCentre + (qrand() - .5) * 26;
+    targetBpm = Math.max(BPM_MIN, Math.min(BPM_MAX, t));
+    setTimeout(wander, 2600 + qrand() * 3400);
+  })();
+
+  function sizeWave() {
+    WG = fit(wCv);
+    var L = Math.max(1, Math.floor(WG.w));
+    function carry(old, Ctor) {
+      var n = new Ctor(L);
+      if (old) { var k = Math.min(old.length, L); n.set(old.subarray(old.length - k), L - k); }
+      return n;
+    }
+    wbuf = carry(wbuf, Float32Array);
+    wenv = carry(wenv, Float32Array);
+  }
+  function wstep() {
+    wph = (wph + 1 / PXB) % 1;
+    wbuf.copyWithin(0, 1);
+    wenv.copyWithin(0, 1);
+    var i = wbuf.length - 1;
+    wbuf[i] = TABLE[Math.round(wph * (TABLE.length - 1)) % TABLE.length];
+    // The backdrop needs a body that lasts the whole beat, the way a track
+    // in a music player does, not one that collapses between spikes. So it
+    // is a lens across the beat, roughened column by column so it reads as
+    // a waveform rather than a painted ellipse, with the signal's own shape
+    // bulging through it and a noise floor underneath so the quiet stretches
+    // still fizz.
+    /* The waveform is its own track. It used to be generated from the beat
+       phase, which meant every shape was the same lens repeated forever and
+       every loud moment sat under a spike. It now runs on its own clock:
+       three oscillators on periods that never divide into each other, so
+       the dynamics never repeat, plus transients that hit and decay and the
+       occasional near-silent bar. Nothing here knows the heart exists. */
+    mPh++;
+    var s1 = Math.sin(mPh / 211.7), s2 = Math.sin(mPh / 97.3 + 1.7), s3 = Math.sin(mPh / 37.1 + 4.2);
+    var body = .05 + .42 * (s1 * .5 + .5) + .31 * (s2 * .5 + .5) + .22 * (s3 * .5 + .5);
+    body = Math.pow(body, 1.7);                                // deepen the quiet passages
+    mHit *= .84;
+    if (qrand() < .045) mHit = .30 + qrand() * .55;            // a transient
+    var gate = Math.sin(mPh / 313.3 + 2.1) > .90 ? .18 : 1;    // a break in the track
+    var tex = .62 + qrand() * .38;                             // jitter, not noise
+    var v = (body * gate + mHit) * tex;
+    wenv[i] = v < .02 ? .02 : v > 1 ? 1 : v;
+  }
+  /* The trace is the point. Anyone glancing at this panel has to read it
+     as a heartbeat first and anything clever second, so the ECG is drawn
+     last, brightest and tallest, and everything behind it is kept to
+     coloured light: a graticule, a mirrored picket of the same signal
+     roughened per column, and a phosphor fade into the past. Colour still
+     carries the board, one instrument per beat, it just no longer shouts
+     over the thing it is supposed to be decorating. */
+  function drawWave() {
+    var c = WG.c, W = WG.w, H = WG.h;
+    var MID = H * .52;
+    var A = H * .43;                       // the trace gets the whole lane
+    var BA = H * .44;                      // the backdrop is kept under it
+    var n = wbuf.length;
+    c.clearRect(0, 0, W, H);
+
+    /* ── graticule ─────────────────────────────────────── */
+    c.fillStyle = 'rgba(' + LM + ',.045)';
+    for (var gx = W % 13; gx < W; gx += 13) c.fillRect(gx, 0, 1, H);
+    c.fillRect(0, MID - A * .5, W, 1);
+    c.fillRect(0, MID + A * .5, W, 1);
+    c.fillStyle = 'rgba(' + LM + ',.10)';
+    c.fillRect(0, MID, W, 1);
+
+    /* ── backdrop: the signal as a mirrored picket, fading into the past ──
+       On a tired machine this becomes a coarser picket rather than
+       disappearing: same shape, fewer draws. */
+    var st = QUAL >= 3 ? 1 : QUAL === 2 ? 2 : 3;
+    var core = QUAL >= 2;
+    for (var x = 0; x < n; x += st) {
+      var e = wenv[x];
+      if (e <= .01) continue;
+      var age = x / n;                     // 0 oldest, 1 newest
+      var ph = .34 + age * .42;            // a gentle fade, not a vanishing act
+      var h = e * BA;
+      c.fillStyle = rgba(WAVEC, ph * .46);
+      c.fillRect(x, MID - h, st, h * 2);
+      if (core && e > .5) {                // brighter core, like a loud passage
+        c.fillStyle = rgba(WAVEC, ph * .72);
+        c.fillRect(x, MID - h * .42, st, h * .84);
+      }
+    }
+
+    /* ── the trace, drawn last so nothing sits on top of it ── */
+    c.lineJoin = 'round'; c.lineCap = 'round';
+    // a dark backing keeps it legible wherever the backdrop is brightest
+    c.strokeStyle = 'rgba(4,6,12,.85)'; c.lineWidth = 3.2;
+    c.beginPath();
+    for (var x2 = 0; x2 < n; x2++) {
+      var y2 = MID - wbuf[x2] * A;
+      x2 === 0 ? c.moveTo(x2, y2) : c.lineTo(x2, y2);
+    }
+    c.stroke();
+
+    c.strokeStyle = '#c1ff3a';
+    c.shadowColor = 'rgba(' + LM + ',.8)'; c.shadowBlur = 6;
+    c.lineWidth = 1.5;
+    c.beginPath();
+    for (var x3 = 0; x3 < n; x3++) {
+      var y3 = MID - wbuf[x3] * A;
+      x3 === 0 ? c.moveTo(x3, y3) : c.lineTo(x3, y3);
+    }
+    c.stroke(); c.shadowBlur = 0;
+
+    /* ── mark each R peak so the beat is unmissable ── */
+    for (var x4 = 1; x4 < n - 1; x4++) {
+      if (wbuf[x4] > .82 && wbuf[x4] >= wbuf[x4 - 1] && wbuf[x4] > wbuf[x4 + 1]) {
+        var py = MID - wbuf[x4] * A;
+        c.fillStyle = 'rgba(255,255,255,' + (.35 + (x4 / n) * .6).toFixed(3) + ')';
+        c.fillRect(x4 - 2, py - 5, 5, 1);
+        c.fillRect(x4, py - 5, 1, 3);
+      }
+    }
+
+    /* ── the write head ── */
+    var hy = MID - wbuf[n - 1] * A;
+    c.fillStyle = '#ffffff';
+    c.shadowColor = 'rgba(' + LM + ',.9)'; c.shadowBlur = 7;
+    c.beginPath(); c.arc(n - 1.5, hy, 2.1, 0, Math.PI * 2); c.fill();
+    c.shadowBlur = 0;
+  }
+
+  /* ── MENU: reticle glides to whatever you are pointing at ── */
+  var menuEl = $('menu'), scanEl = $('scan'), items = [].slice.call(document.querySelectorAll('.mi'));
+  var scanX = 0, scanW = 0, scanTX = 0, scanTW = 0, scanA = 0, scanTA = 0, scanInit = false;
+
+  function scanTo(el) {
+    if (!el) return;
+    scanTX = el.offsetLeft; scanTW = el.offsetWidth; scanTA = 1;
+    if (!scanInit) { scanX = scanTX; scanW = scanTW; scanInit = true; }
+  }
+  function scanRest() { scanTo(document.querySelector('.mi.on')); }
+
+  items.forEach(function (el) {
+    el.addEventListener('pointerenter', function () { scanTo(el); });
+    el.addEventListener('focus', function () { scanTo(el); });
+  });
+  menuEl.addEventListener('pointerleave', scanRest);
+  addEventListener('resize', function () { scanInit = false; scanRest(); });
+  scanRest();
+
+  function drawScan() {
+    scanX = lerp(scanX, scanTX, .16);
+    scanW = lerp(scanW, scanTW, .16);
+    scanA = lerp(scanA, scanTA, .12);
+    scanEl.style.transform = 'translateX(' + scanX.toFixed(1) + 'px)';
+    scanEl.style.width = scanW.toFixed(1) + 'px';
+    scanEl.style.opacity = scanA.toFixed(3);
+  }
+
+  /* ── ONE LOOP ────────────────────────────────────────────── */
+  function sizeAll() { OG = fit(oCv); sizeWave(); }
+  sizeAll();
+  for (var pw = 0; pw < wbuf.length + 4; pw++) wstep();
+  addEventListener('resize', sizeAll);
+
+  var last = null;
+  function frame(ts) {
+    if (!last) last = ts;
+    var raw = ts - last;
+    var dt = Math.min(.05, raw / 1000); last = ts;
+    if (raw > 0) governor(raw);
+    clock();
+    drawField(ts / 1000, dt);
+    bpm = lerp(bpm, targetBpm, .022);
+    var bpmR = Math.round(bpm);
+    if (bpmR !== lastBpm) { lastBpm = bpmR; bpmEl.textContent = bpmR; }
+    wac += dt * PXB * (bpm / 60);
+    var n = Math.min(Math.floor(wac), wbuf.length); wac -= Math.floor(wac);
+    for (var i = 0; i < n; i++) wstep();
+    drawWave();
+    drawScan();
+    if (!RM) requestAnimationFrame(frame);
+  }
+  document.addEventListener('visibilitychange', function () { last = null; });
+
+  if (RM) { clock(); drawField(0, 0); drawWave(); drawScan(); $('bpm').textContent = Math.round(bpm); }
+  else requestAnimationFrame(frame);
+})();
+</script>
+<script src="hud-glitch.js?v=5"></script>
+</body>
+</html>

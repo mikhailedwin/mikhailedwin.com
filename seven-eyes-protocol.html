@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>SYS://SEVEN-EYES.PROTOCOL</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="anonymous" />
+<link rel="stylesheet" href="styles.css?v=7">
+<script>
+  var _h = window.innerHeight;
+  document.documentElement.style.height = _h + 'px';
+  document.documentElement.style.overflow = 'hidden';
+  document.documentElement.style.setProperty('--screen-h', _h + 'px');
+  document.documentElement.style.setProperty('--screen-w', window.innerWidth + 'px');
+</script>
+</head>
+<body class="surv-page">
+
+<div id="surv-map"></div>
+<div class="surv-vignette"></div>
+<div class="surv-scanlines"></div>
+<div id="surv-ch"></div>
+
+<div class="surv-hud">
+  <div class="surv-top">
+    <div class="surv-top-left">
+      <img src="favicon.svg" width="16" height="14" alt="">
+      <span>SYS://SEVEN-EYES.RELAY &nbsp;·&nbsp; SAT-7 &nbsp;·&nbsp; TS/SCI CLASSIFIED</span>
+    </div>
+    <div style="display:flex;gap:16px;align-items:center">
+      <span id="surv-status" class="surv-status-txt" style="color:#ffb800">RELAY ESTABLISHING</span>
+    </div>
+  </div>
+
+  <div class="surv-panel surv-tl">
+    <div class="sp-title">RELAY.INFO</div>
+    <div class="sp-row"><span class="sp-label">CAM</span><span class="sp-val surv-flicker">SAT-7 RELAY</span></div>
+    <div class="sp-row"><span class="sp-label">ALT</span><span class="sp-val surv-flicker">412 KM</span></div>
+    <div class="sp-row"><span class="sp-label">ZOOM</span><span class="sp-val"><span id="surv-zoom">10</span>x OPTICAL</span></div>
+  </div>
+
+  <div class="surv-panel surv-tr">
+    <div class="sp-title">TARGET.DATA</div>
+    <div class="sp-row"><span class="sp-label">IP</span><span class="sp-val" id="surv-ip">RESOLVING...</span></div>
+    <div class="sp-row"><span class="sp-label">COORDS</span><span class="sp-val" id="surv-coords">TRIANGULATING</span></div>
+    <div class="sp-row"><span class="sp-label">LOC</span><span class="sp-val" id="surv-city">--</span></div>
+    <div class="sp-row"><span class="sp-label">CONF</span><span class="sp-val" id="surv-conf">0%</span></div>
+    <div class="sp-row"><span class="sp-label">DEVICE</span><span class="sp-val" id="surv-device">SCANNING</span></div>
+    <div class="sp-row"><span class="sp-label">BROWSER</span><span class="sp-val" id="surv-browser">SCANNING</span></div>
+    <div class="sp-row" id="surv-vpn-row" style="display:none"><span class="sp-label">VPN</span><span class="sp-val" style="color:#ff2d92">ACTIVE — SIGNAL MASKED</span></div>
+  </div>
+
+  <div class="surv-panel surv-bl">
+    <div class="sp-title">OPERATOR.AUTH</div>
+    <div class="sp-row"><span class="sp-label">OPER</span><span class="sp-val surv-flicker">[REDACTED]</span></div>
+    <div class="sp-row"><span class="sp-label">AUTH</span><span class="sp-val surv-flicker">EYES ONLY</span></div>
+    <div class="sp-row"><span class="sp-label">ASSET</span><span class="sp-val surv-flicker">ACTIVE</span></div>
+  </div>
+
+  <div class="surv-panel surv-br">
+    <div class="sp-title">SESSION.LOG</div>
+    <div class="sp-row"><span class="sp-label">TIME</span><span class="sp-val" id="surv-time">--:--:-- UTC</span></div>
+    <div class="sp-row"><span class="sp-label">SRC</span><span class="sp-val surv-flicker">MIKHAIL.PROFILE</span></div>
+    <div class="sp-row"><span class="sp-label">NODE</span><span class="sp-val surv-flicker">HKG-007</span></div>
+  </div>
+
+  <a href="index.html" class="surv-back">[ &larr; BACK TO GRID ]</a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous"></script>
+<script>
+// Block iOS/Safari browser-level pinch-zoom — Leaflet still handles the gesture
+document.addEventListener('touchmove', function (e) {
+  if (e.touches.length > 1) e.preventDefault();
+}, { passive: false });
+document.addEventListener('gesturestart',  function (e) { e.preventDefault(); }, { passive: false });
+document.addEventListener('gesturechange', function (e) { e.preventDefault(); }, { passive: false });
+
+window.addEventListener('load', function () {
+  const statusEl = document.getElementById('surv-status');
+  const ipEl     = document.getElementById('surv-ip');
+  const coordsEl = document.getElementById('surv-coords');
+  const cityEl   = document.getElementById('surv-city');
+  const confEl   = document.getElementById('surv-conf');
+  const timeEl   = document.getElementById('surv-time');
+  const zoomEl   = document.getElementById('surv-zoom');
+  const ch       = document.getElementById('surv-ch');
+  const vpnRow    = document.getElementById('surv-vpn-row');
+  const deviceEl  = document.getElementById('surv-device');
+  const browserEl = document.getElementById('surv-browser');
+
+  // Leaflet comes off a CDN. If that is blocked by a network, an ad
+  // blocker, or an outage, everything below throws on the first line and
+  // the whole panel dies. Say so in the panel instead.
+  if (typeof L === 'undefined') {
+    const holder = document.getElementById('surv-map');
+    if (holder) {
+      holder.style.display = 'flex';
+      holder.style.alignItems = 'center';
+      holder.style.justifyContent = 'center';
+      holder.textContent = 'MAP LINK UNREACHABLE';
+      holder.style.font = '10px "JetBrains Mono", monospace';
+      holder.style.letterSpacing = '.24em';
+      holder.style.color = 'rgba(255,45,146,.8)';
+    }
+    const st = document.getElementById('surv-conf');
+    if (st) st.textContent = 'DEGRADED';
+    return;
+  }
+
+  const map = L.map('surv-map', {
+    zoomControl: false, attributionControl: false,
+    dragging: true, touchZoom: true,
+    scrollWheelZoom: true, doubleClickZoom: true, keyboard: true
+  }).setView([22.2796, 114.1736], 10);
+
+  L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    { maxZoom: 19, attribution: '' }
+  ).addTo(map);
+
+  map.invalidateSize({pan: false});
+  setTimeout(() => map.invalidateSize({pan: false}), 150);
+  setTimeout(() => map.invalidateSize({pan: false}), 600);
+  window.addEventListener('resize', () => map.invalidateSize({pan: false}));
+
+  map.on('zoom', () => { zoomEl.textContent = Math.round(map.getZoom()); });
+
+  setInterval(() => {
+    timeEl.textContent = new Date().toUTCString().slice(17, 25) + ' UTC';
+  }, 1000);
+
+  let targetLL = null;
+  function updateCH() {
+    if (!targetLL) return;
+    const pt = map.latLngToContainerPoint(targetLL);
+    const inView = pt.x >= 0 && pt.x <= window.innerWidth && pt.y >= 0 && pt.y <= window.innerHeight;
+    if (!inView) { ch.style.opacity = '0'; return; }
+    ch.style.opacity = '';
+    ch.style.left = pt.x + 'px';
+    ch.style.top  = pt.y + 'px';
+  }
+  map.on('move zoom', updateCH);
+
+  function setStatus(txt, color) {
+    statusEl.textContent = txt;
+    statusEl.style.color = color || '#ffb800';
+  }
+
+  // VPN keyword fallback — catches obvious cases if proxycheck.io fails
+  const VPN_KEYWORDS = [
+    'vpn','proxy','tor','mullvad','nordvpn','expressvpn','protonvpn',
+    'cyberghost','surfshark','private internet','hide.me','ipvanish',
+    'tunnelbear','m247','zenlayer','datacamp','choopa','colocation',
+    'datacenter','data center','digitalocean','linode','vultr','ovh',
+    'hetzner','cloudflare','fastly','31173','quadranet','leaseweb',
+    'psychz','reliablesite','tzulo','serverius','nexeon','packethub'
+  ];
+  function keywordVPN(d) {
+    const hay = ((d.org || '') + ' ' + (d.asn || '')).toLowerCase();
+    return VPN_KEYWORDS.some(k => hay.includes(k));
+  }
+
+  // Primary VPN detection via proxycheck.io (free, no key, CORS-enabled)
+  async function detectVPN(ip, fallbackData) {
+    try {
+      const r = await fetch(`https://proxycheck.io/v2/${encodeURIComponent(ip)}?vpn=1`, { signal: AbortSignal.timeout(4000) });
+      const j = await r.json();
+      if (j[ip]?.proxy === 'yes') return true;
+    } catch {}
+    return keywordVPN(fallbackData);
+  }
+
+  function fmtCoords(la, ln) {
+    return `${Math.abs(la).toFixed(4)}°${la >= 0 ? 'N' : 'S'} · ${Math.abs(ln).toFixed(4)}°${ln >= 0 ? 'E' : 'W'}`;
+  }
+
+  let conf = 0, confTarget = 0;
+  const confTick = setInterval(() => {
+    conf = Math.min(conf + Math.random() * 2, 84);
+    confEl.textContent = Math.floor(conf) + '%';
+  }, 180);
+
+  const reticleIcon = L.divIcon({
+    className: '',
+    html: `<div class="surv-marker">
+      <div class="sm-ring sm-r1"></div>
+      <div class="sm-ring sm-r2"></div>
+      <div class="sm-ring sm-r3"></div>
+      <div class="sm-dot"></div>
+      <div class="sm-br sm-br1"></div>
+      <div class="sm-br sm-br2"></div>
+      <div class="sm-br sm-br3"></div>
+      <div class="sm-br sm-br4"></div>
+    </div>`,
+    iconSize: [120, 120],
+    iconAnchor: [60, 60]
+  });
+
+  async function run() {
+    setStatus('LOCATING VISITOR', '#ffb800');
+
+    let lat = 22.2796, lng = 114.1736, ip = '---', city = 'UNKNOWN', country = '---';
+    let isVPN = false;
+
+    try {
+      const r = await fetch('https://ipapi.co/json/');
+      const d = await r.json();
+      if (d.latitude)     lat     = d.latitude;
+      if (d.longitude)    lng     = d.longitude;
+      if (d.ip)           ip      = d.ip;
+      if (d.city)         city    = d.city.toUpperCase();
+      if (d.country_name) country = d.country_name.toUpperCase();
+      isVPN = await detectVPN(ip, d);
+    } catch {}
+
+    const parts = ip.split('.');
+    ipEl.textContent = parts.length === 4
+      ? `${parts[0]}.${parts[1]}.█.█`
+      : ip;
+
+    clearInterval(confTick);
+    cityEl.textContent = `${city}, ${country}`;
+
+    if (isVPN) {
+      conf = 38; confTarget = 38;
+      confEl.textContent = conf.toFixed(1) + '%';
+      vpnRow.style.display = '';
+      setStatus('ANOMALY DETECTED', '#ff2d92');
+      setTimeout(() => setStatus('SIGNAL OBFUSCATED — VPN ACTIVE', '#ff2d92'), 1400);
+    } else {
+      conf = 88; confTarget = 88;
+      confEl.textContent = conf.toFixed(1) + '%';
+      setStatus('SIGNAL ACQUIRED', '#ffb800');
+    }
+
+    // Fly to location — VPN gets lower zoom (can't pinpoint a datacenter)
+    map.flyTo([lat, lng], isVPN ? 12 : 15, { duration: 4.5, easeLinearity: .1 });
+
+    setTimeout(() => {
+      setStatus(isVPN ? 'TRIANGULATING — RELAY REROUTING' : 'TRACKING INITIATED', '#ffb800');
+      if (!isVPN) { confTarget = 91; }
+    }, 2200);
+
+    setTimeout(() => {
+      // Drop wandering reticle
+      let wLat = lat, wLng = lng;
+      targetLL = L.latLng(wLat, wLng);
+      const marker = L.marker([wLat, wLng], { icon: reticleIcon }).addTo(map);
+      ch.classList.add('active');
+      updateCH();
+      coordsEl.textContent = fmtCoords(wLat, wLng);
+
+      // Wander params — VPN: wide erratic sweep; normal: tight neighbourhood drift
+      const step   = isVPN ? 0.006  : 0.018;
+      const pull   = isVPN ? 0.035  : 0.02;
+      const wandleMs = isVPN ? 550 : 5000;
+
+      setInterval(() => {
+        const angle = Math.random() * Math.PI * 2;
+        wLat += Math.cos(angle) * step * (0.4 + Math.random() * 0.8);
+        wLng += Math.sin(angle) * step * (0.4 + Math.random() * 0.8);
+        wLat += (lat - wLat) * pull;
+        wLng += (lng - wLng) * pull;
+        targetLL = L.latLng(wLat, wLng);
+        requestAnimationFrame(() => {
+          marker.setLatLng(targetLL);
+          map.panTo(targetLL, { animate: true, duration: 2 });
+          updateCH();
+          coordsEl.textContent = fmtCoords(wLat, wLng);
+        });
+      }, wandleMs);
+
+      // Fluctuating confidence — VPN stays low and noisy; normal hovers high
+      const confMin  = isVPN ? 25  : 80;
+      const confMax  = isVPN ? 71  : 97;
+      const confStep = isVPN ? 14  : 14;
+      const confBias = isVPN ? -0.03 : 0;
+
+      setInterval(() => {
+        confTarget += (Math.random() - 0.5 + confBias) * confStep;
+        confTarget = Math.max(confMin, Math.min(confMax, confTarget));
+        conf += (confTarget - conf) * 0.28;
+        confEl.textContent = conf.toFixed(1) + '%';
+      }, isVPN ? 600 : 800);
+
+      if (isVPN) {
+        // Cycle status messages to signal it's still searching
+        const msgs = [
+          ['TRIANGULATING — VPN INTERFERENCE', '#ffb800'],
+          ['SIGNAL OBFUSCATED — VPN ACTIVE',   '#ff2d92'],
+          ['RELAY REROUTING...',               '#ffb800'],
+          ['TARGET SIGNAL MASKED',             '#ff2d92'],
+          ['ATTEMPTING BYPASS...',             '#ffb800'],
+        ];
+        let mi = 0;
+        setInterval(() => {
+          mi = (mi + 1) % msgs.length;
+          setStatus(msgs[mi][0], msgs[mi][1]);
+        }, 3200);
+      } else {
+        setStatus('APPROXIMATE LOCK', '#ff2d92');
+      }
+    }, 5200);
+  }
+
+  setTimeout(run, 700);
+
+  // Device + browser detection
+  (function detectHardware() {
+    var ua = navigator.userAgent;
+    var dpr = window.devicePixelRatio || 1;
+    var sw = screen.width, sh = screen.height;
+    // portrait-normalize (min=width side, max=height side)
+    var pw = Math.min(sw, sh), ph = Math.max(sw, sh);
+
+    // Browser
+    var bname = 'UNKNOWN';
+    var mv;
+    if ((mv = ua.match(/EdgA?\/([\d]+)/))) {
+      bname = 'EDGE ' + mv[1];
+    } else if ((mv = ua.match(/CriOS\/([\d]+)/))) {
+      bname = 'CHROME ' + mv[1] + ' (iOS)';
+    } else if ((mv = ua.match(/FxiOS\/([\d]+)/))) {
+      bname = 'FIREFOX ' + mv[1] + ' (iOS)';
+    } else if ((mv = ua.match(/OPiOS\/([\d]+)/))) {
+      bname = 'OPERA ' + mv[1] + ' (iOS)';
+    } else if ((mv = ua.match(/Chrome\/([\d]+)/))) {
+      bname = 'CHROME ' + mv[1];
+    } else if ((mv = ua.match(/Firefox\/([\d]+)/))) {
+      bname = 'FIREFOX ' + mv[1];
+    } else if ((mv = ua.match(/OPR\/([\d]+)/))) {
+      bname = 'OPERA ' + mv[1];
+    } else if ((mv = ua.match(/Version\/([\d]+).*Safari/)) && /Safari/.test(ua)) {
+      bname = 'SAFARI ' + mv[1];
+    } else if (/Safari/.test(ua)) {
+      bname = 'SAFARI';
+    }
+    browserEl.textContent = bname;
+
+    // iOS version extraction
+    var iosVerMatch = ua.match(/OS (\d+)_/);
+    var iosVer = iosVerMatch ? parseInt(iosVerMatch[1], 10) : null;
+
+    // Quick device guess before map loads
+    var isIphone = /iPhone/.test(ua);
+    var isIpad   = /iPad/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+    var isAndroid = /Android/.test(ua);
+
+    if (isIphone) deviceEl.textContent = 'iPHONE';
+    else if (isIpad) deviceEl.textContent = 'iPAD';
+    else if (isAndroid) deviceEl.textContent = 'ANDROID';
+    else if (/Windows/.test(ua)) deviceEl.textContent = 'WINDOWS PC';
+    else if (/Macintosh/.test(ua)) deviceEl.textContent = 'MAC';
+    else if (/Linux/.test(ua)) deviceEl.textContent = 'LINUX';
+
+    if (!isIphone && !isIpad) return; // no map needed for non-Apple
+
+    fetch('device_map.json?v=1')
+      .then(function (r) { return r.json(); })
+      .then(function (map) {
+        var entries = isIphone ? map.iphone : map.ipad;
+        // Filter to matching w/h/dpr
+        var matches = entries.filter(function (e) {
+          return e.w === pw && e.h === ph && e.dpr === dpr;
+        });
+        if (!matches.length) {
+          deviceEl.textContent = isIphone ? 'iPHONE (UNRECOGNISED)' : 'iPAD (UNRECOGNISED)';
+          return;
+        }
+        // Among matches, pick the best one using ios_min
+        var best = null;
+        if (iosVer !== null) {
+          // Prefer entries that have ios_min <= iosVer, pick highest ios_min
+          var versioned = matches.filter(function (e) {
+            return e.ios_min !== undefined && e.ios_min <= iosVer;
+          });
+          if (versioned.length) {
+            versioned.sort(function (a, b) { return b.ios_min - a.ios_min; });
+            best = versioned[0];
+          }
+        }
+        // Fall back to first entry without ios_min (catch-all)
+        if (!best) {
+          best = matches.find(function (e) { return e.ios_min === undefined; }) || matches[0];
+        }
+        deviceEl.textContent = best.model.toUpperCase();
+      })
+      .catch(function () {
+        deviceEl.textContent = isIphone ? 'iPHONE' : 'iPAD';
+      });
+  })();
+
+  const NOISE = '█▓░▒#?X!@01%$';
+  function runBurst(el, orig) {
+    let ticks = 0;
+    const total = 5 + Math.floor(Math.random() * 7);
+    const id = setInterval(() => {
+      const chars = orig.split('');
+      const corrupt = 1 + Math.floor(Math.random() * 3);
+      for (let n = 0; n < corrupt; n++) {
+        const pos = Math.floor(Math.random() * chars.length);
+        chars[pos] = NOISE[Math.floor(Math.random() * NOISE.length)];
+      }
+      el.textContent = chars.join('');
+      el.style.opacity = Math.random() > 0.25 ? '1' : '0.05';
+      if (++ticks >= total) {
+        clearInterval(id);
+        el.textContent = orig;
+        el.style.opacity = '';
+        setTimeout(() => runBurst(el, orig), 600 + Math.random() * 2800);
+      }
+    }, 35 + Math.random() * 55);
+  }
+  document.querySelectorAll('.surv-flicker').forEach(el => {
+    el._orig = el.textContent;
+    setTimeout(() => runBurst(el, el._orig), Math.random() * 1200);
+  });
+
+});
+</script>
+<script src="core.js?v=2"></script>
+</body>
+</html>

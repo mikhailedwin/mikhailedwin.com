@@ -1,0 +1,36 @@
+name: quantum-rng
+
+on:
+  schedule:
+    - cron: '0 17 * * 0'
+  workflow_dispatch:
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: claude/f00f
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: cache qiskit packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: qiskit-${{ runner.os }}-3.12
+      - name: install qiskit
+        run: pip install qiskit qiskit-aer
+      - name: run quantum circuit
+        run: python scripts/gen_quantum_rng.py
+      - name: commit output
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add quantum_rng.json
+          git diff --cached --quiet || git commit -m 'quantum.seeds // circuit.collapsed'
+          git push origin claude/f00f

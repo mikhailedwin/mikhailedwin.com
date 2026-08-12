@@ -1,0 +1,495 @@
+/* ===========================================================
+   HUD.CSS — the shared instrument language
+   Linked by index / projects / dossier so a colour change is
+   a one-file edit rather than three.
+
+   Every colour has exactly one job:
+     CYAN     structure, rings, modules, labels
+     MAGENTA  losses, alerts, menu captions
+     AMBER    the time domain, and the identity strapline
+     LIME     life signs. vitals, online state, gains
+   =========================================================== */
+
+/* ===========================================================
+   M.E.O.S — single-viewport instrument
+
+   Every colour has exactly one job, and never does another one:
+     CYAN     structure, rings, core, gaining bodies
+     MAGENTA  losses. drawdown, losing bodies, losing ticks
+     AMBER    the time domain. clock, date, timestamps, uptime
+     LIME     life signs. online status, the ECG, the pulse
+   Four colours, four meanings, so the screen stays readable.
+   =========================================================== */
+:root {
+  --bg:      #05050a;
+  --cyan:    #00f0ff;
+  --magenta: #ff2d92;
+  --amber:   #ffb800;
+  --lime:    #c1ff3a;
+
+  /* No grey anywhere. Every text tier is a tint of the colour that owns
+     its meaning, which is both more colourful AND more legible than the
+     desaturated blue-grey it replaces. */
+  --ink:   #e8e8f2;
+  --cy-1:  rgba(0, 240, 255, .92);
+  --cy-2:  rgba(0, 240, 255, .68);
+  --cy-3:  rgba(0, 240, 255, .30);   /* hairlines only, never text */
+  --am-1:  rgba(255, 184, 0, .92);
+  --am-2:  rgba(255, 184, 0, .70);
+  --lm-1:  rgba(193, 255, 58, .92);
+  --lm-2:  rgba(193, 255, 58, .70);
+  --mg-1:  rgba(255, 45, 146, .92);
+  --mg-2:  rgba(255, 45, 146, .68);
+
+  --text:    #e8e8f2;
+  --line:    rgba(0, 240, 255, 0.15);
+  --line-lo: rgba(0, 240, 255, 0.07);
+  --low:     rgba(0, 240, 255, 0.22);   /* rules only */
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  background:
+    radial-gradient(ellipse 90% 70% at 62% 46%, rgba(0,240,255,.045) 0%, transparent 62%),
+    var(--bg);
+  color: var(--cy-2);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+::selection { background: var(--cyan); color: var(--bg); }
+
+/* Very restrained film. One layer, no blend mode. */
+body::after {
+  content: ''; position: fixed; inset: 0; z-index: 60; pointer-events: none;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 2px, rgba(0,0,0,.13) 2px 3px),
+    radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.5) 100%);
+}
+
+/* ── Shell: asymmetric, wide gutters ──────────────────────── */
+.hud {
+  position: relative; z-index: 2;
+  height: 100svh;
+  display: grid;
+  grid-template-columns: 274px 1fr 250px;
+  grid-template-rows: 34px 1fr 74px;
+  column-gap: 46px;
+  row-gap: 30px;
+  padding: 18px 26px 20px;
+}
+.col { display: flex; flex-direction: column; justify-content: space-between; min-height: 0; }
+
+/* ── Module language ──────────────────────────────────────── */
+.mod { position: relative; padding-top: 9px; min-height: 0; }
+.mod + .mod { margin-top: 34px; }
+.mod::before {
+  content: ''; position: absolute; top: 0; left: 0;
+  width: 8px; height: 8px;
+  border-top: 1px solid var(--cyan); border-left: 1px solid var(--cyan);
+  opacity: .8;
+}
+.h {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 9px; letter-spacing: .28em; color: var(--cy-2);
+  padding: 0 0 8px 14px; margin-bottom: 10px;
+  border-bottom: 1px solid var(--line-lo);
+}
+.h b { color: var(--cy-1); font-weight: 400; letter-spacing: .22em; }
+.h b.warn { color: var(--amber); }
+.h b.dn { color: var(--magenta); }
+.h b.life { color: var(--lm-1); }
+.h.time b { color: var(--am-1); }
+
+/* ── Top strip ────────────────────────────────────────────── */
+.strip {
+  grid-column: 1 / -1;
+  display: flex; align-items: center; gap: 18px;
+  border-bottom: 1px solid var(--line-lo);
+  padding-bottom: 10px;
+}
+.mark { display: flex; align-items: center; }
+.build { color: var(--cy-2); letter-spacing: .2em; font-size: 9px; white-space: nowrap; }
+.build em { font-style: normal; color: var(--lm-1); }
+.build em.warn { color: var(--am-1); }
+/* live status pip */
+.pip { display: inline-block; width: 5px; height: 5px; border-radius: 50%;
+  background: var(--lime); box-shadow: 0 0 8px var(--lime); margin-right: 7px;
+  vertical-align: 1px; animation: breathe 3s ease-in-out infinite; }
+.pip.warn { background: var(--amber); box-shadow: 0 0 8px var(--amber); }
+@keyframes breathe { 50% { opacity: .25; } }
+.mark img { width: 22px; height: 19px; display: block; flex-shrink: 0; }
+.strip .spacer { margin-left: auto; }
+
+/* Tilt control, phones only. Sits inside the field but swallows its own
+   tap so it cannot fire the Seven Eyes handoff underneath. */
+.tilt-arm {
+  position: absolute; right: 0; bottom: -6px; z-index: 3;
+  background: none; border: 0; border-bottom: 1px solid var(--cy-3);
+  color: var(--cy-1); font: 9px/1 'JetBrains Mono', monospace;
+  letter-spacing: .22em; padding: 4px 2px 5px; cursor: pointer;
+  -webkit-appearance: none; appearance: none; border-radius: 0;
+}
+.tilt-arm::before { content: '\25C6'; color: var(--lm-1); margin-right: 7px; font-size: 7px; vertical-align: 1px; }
+.tilt-arm:active { color: var(--lm-1); border-bottom-color: var(--lm-1); }
+
+/* ── Header tape: the market crawling across the top ───────
+   Yields and prices share one rail. The symbol is structure so it
+   stays cyan; only the move is coloured, lime up and magenta down,
+   the same rule the rest of the machine follows. Amber is not used
+   here, it belongs to the clock. */
+.tape {
+  flex: 1 1 auto; min-width: 0; position: relative; overflow: hidden;
+  height: 14px; margin-left: 4px;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+          mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+}
+.tape-rail {
+  position: absolute; top: 0; left: 0; white-space: nowrap; will-change: transform;
+  animation: tape-roll 60s linear infinite;
+}
+.tape:hover .tape-rail, .tape:focus-within .tape-rail { animation-play-state: paused; }
+@keyframes tape-roll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.tk { display: inline-block; margin-right: 26px; font-size: 9px; letter-spacing: .16em; line-height: 14px; }
+.tk .s { color: var(--cy-2); }
+.tk .p { color: var(--cy-1); margin-left: 6px; font-variant-numeric: tabular-nums; }
+.tk .c { margin-left: 5px; font-variant-numeric: tabular-nums; }
+.tk .c.up { color: var(--lm-1); }
+.tk .c.dn { color: var(--mg-1); }
+.tk.y .s::after { content: 'Y'; color: var(--cy-3); margin-left: 1px; }
+.tk.stale .p { color: var(--cy-3); }
+@media (prefers-reduced-motion: reduce) { .tape-rail { animation: none; } }
+
+/* ── Identity: RGB-split glitch, ported from the homepage ─── */
+.ident { padding-left: 2px; margin-bottom: 6px; }
+.ident .n {
+  font-family: 'Chakra Petch', sans-serif; font-weight: 700;
+  font-size: clamp(34px, 3.4vw, 56px); line-height: .86;
+  letter-spacing: -.03em; color: var(--ink); text-transform: uppercase;
+}
+.glitch { position: relative; display: block; }
+.glitch::before, .glitch::after {
+  content: attr(data-text);
+  position: absolute; top: 0; left: 0; width: 100%;
+  overflow: hidden; pointer-events: none;
+}
+.glitch::before {
+  color: var(--amber); text-shadow: 0 0 12px var(--amber);
+  animation: g1 2.8s infinite steps(1);
+  clip-path: polygon(0 0, 100% 0, 100% 33%, 0 33%);
+}
+.glitch::after {
+  color: #fff176; text-shadow: 0 0 18px #fff176;
+  animation: g2 2.1s infinite steps(1);
+  clip-path: polygon(0 66%, 100% 66%, 100% 100%, 0 100%);
+}
+.glitch.b::before { animation-duration: 3.3s; animation-delay: -1.1s; }
+.glitch.b::after  { animation-duration: 2.6s; animation-delay: -.7s; }
+@keyframes g1 {
+  0%, 70%, 100% { transform: translate(0); opacity: 0; }
+  71% { transform: translate(-5px, 1px);  opacity: 1;   color: var(--amber);   text-shadow: 0 0 12px var(--amber); }
+  73% { transform: translate(3px, -2px);  opacity: .9;  color: var(--magenta); text-shadow: 0 0 12px var(--magenta); }
+  74% { transform: translate(0);          opacity: 0; }
+  86% { transform: translate(-3px, 2px);  opacity: .85; color: var(--amber);   text-shadow: 0 0 12px var(--amber); }
+  88% { transform: translate(0);          opacity: 0; }
+}
+@keyframes g2 {
+  0%, 62%, 100% { transform: translate(0); opacity: 0; }
+  63% { transform: translate(6px, -2px);  opacity: 1;   color: #fff176;      text-shadow: 0 0 18px #fff176; }
+  65% { transform: translate(-4px, 1px);  opacity: .95; color: var(--cyan);  text-shadow: 0 0 18px var(--cyan); }
+  66% { transform: translate(0);          opacity: 0; }
+  81% { transform: translate(4px, 1px);   opacity: .8;  color: var(--magenta); text-shadow: 0 0 18px var(--magenta); }
+  83% { transform: translate(0);          opacity: 0; }
+}
+.ident .r { font-size: 10px; letter-spacing: .2em; color: var(--am-1); line-height: 2.1; margin-top: 18px; }
+.ident .r i { font-style: normal; color: var(--cy-1); }
+
+/* ── Key / value ──────────────────────────────────────────── */
+.kv { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0 5px 14px; font-size: 9px; }
+.kv + .kv { border-top: 1px solid rgba(0,240,255,.045); }
+.kv .k { color: var(--cy-2); }
+.kv .v { color: var(--text); text-align: right; font-variant-numeric: tabular-nums; }
+.kv .v.c { color: var(--cy-1); }
+.kv .v.t { color: var(--am-1); }
+.kv .v.life { color: var(--lm-1); }
+
+/* ── Log ──────────────────────────────────────────────────── */
+.logmod { flex: 0 1 auto; min-height: 0; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+/* a scanline crawls down the panel, forever */
+.logmod::after {
+  content: ''; position: absolute; left: 0; right: 0; height: 34px; top: -34px;
+  pointer-events: none; z-index: 3;
+  background: linear-gradient(180deg, transparent, rgba(0,240,255,.055) 55%, rgba(0,240,255,.13) 88%, transparent);
+  animation: scan 4.2s linear infinite;
+}
+@keyframes scan { to { top: 100%; } }
+
+.log {
+  flex: 0 1 auto; min-height: 0; max-height: 54vh; overflow: hidden;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  padding-left: 14px; position: relative;
+  /* Scrollback runs off the top edge. Fade it so the clipped line reads
+     as history falling away rather than as a broken row. */
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 20px);
+          mask-image: linear-gradient(180deg, transparent 0, #000 20px);
+}
+/* the whole panel tears sideways and splits its channels */
+.log.tear { animation: tear .22s steps(2) 1; }
+@keyframes tear {
+  0%   { transform: translateX(0);    text-shadow: none; opacity: 1; }
+  25%  { transform: translateX(-4px); text-shadow: 2px 0 var(--magenta), -2px 0 var(--cyan); opacity: .82; }
+  50%  { transform: translateX(3px);  text-shadow: -3px 0 var(--magenta), 3px 0 var(--cyan); opacity: 1; }
+  75%  { transform: translateX(-2px); text-shadow: 1px 0 var(--cyan); opacity: .7; }
+  100% { transform: translateX(0);    text-shadow: none; opacity: 1; }
+}
+/* individual rows shear out of alignment */
+.ln.slip { transform: translateX(9px); opacity: .55; }
+.ln.inv  { background: rgba(0,240,255,.16); color: var(--bg); }
+/* new rows type themselves in */
+.ln.new { animation: typein .34s steps(18) both; }
+@keyframes typein { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+/* the caret that never stops blinking */
+.caret {
+  padding-left: 14px; color: var(--lm-1); font-size: 9px; line-height: 1.6;
+  flex-shrink: 0;
+}
+.caret::after { content: '\2588'; animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.ln { font-size: 9px; letter-spacing: .05em; color: var(--cy-2); white-space: nowrap; line-height: 1.5; }
+.ln .ts { color: var(--am-2); }
+.ln .s { color: var(--text); }
+.ln .bin  { color: rgba(0,240,255,.42); letter-spacing: .02em; }
+.ln .code { color: var(--cy-2); letter-spacing: .01em; text-transform: none; }
+.ln .code .c-k { color: var(--am-2); }
+.ln .code .c-f { color: var(--cy-1); }
+.ln .code .c-n { color: var(--lm-2); }
+.ln .code .c-c { color: rgba(0,240,255,.32); }
+/* shell work: a lime prompt, the binary in cyan, flags dimmed back so
+   the eye lands on what is actually being run */
+.ln .sh { color: var(--cy-2); letter-spacing: .01em; text-transform: none; }
+.ln .sh .p  { color: var(--lm-1); }
+.ln .sh .b  { color: var(--cy-1); }
+.ln .sh .fl { color: rgba(0,240,255,.42); }
+.ln .sh .st { color: var(--am-2); }
+.ln .out    { color: rgba(193,255,58,.62); text-transform: none; letter-spacing: .01em; }
+.ln .out.bad { color: rgba(255,45,146,.72); }
+.ln.up .n { color: var(--lm-1); }
+.ln.dn .n { color: var(--mg-1); }
+
+/* ── Bottom menu: reticle locks on as you sweep across ────── */
+.menu {
+  grid-column: 1 / -1;
+  position: relative;
+  border-top: 1px solid var(--line-lo);
+  padding-top: 16px;
+  display: flex; align-items: flex-start; gap: 0;
+}
+.menu-scan {
+  position: absolute; top: -1px; left: 0;
+  height: 1px; width: 0;
+  background: var(--cyan);
+  box-shadow: 0 0 12px var(--cyan);
+  opacity: 0;
+  pointer-events: none;
+}
+.menu-scan::before, .menu-scan::after {
+  content: ''; position: absolute; top: -3px;
+  width: 1px; height: 7px; background: var(--cyan);
+}
+.menu-scan::before { left: 0; }
+.menu-scan::after { right: 0; }
+.mi {
+  flex: 1; position: relative;
+  text-decoration: none; padding: 4px 0 0;
+  display: block;
+  transition: opacity .3s ease;
+}
+.mi .t2 {
+  font-family: 'Chakra Petch', sans-serif; font-weight: 600;
+  font-size: clamp(15px, 1.7vw, 26px); line-height: 1;
+  letter-spacing: .01em; color: var(--cy-2);
+  text-transform: uppercase;
+  transition: color .3s ease, transform .35s cubic-bezier(.16,1,.3,1);
+}
+.mi .c2 {
+  display: block; margin-top: 9px;
+  font-size: 9px; letter-spacing: .18em; color: var(--mg-2);
+  opacity: 0; transform: translateY(-4px);
+  transition: opacity .3s ease, transform .35s cubic-bezier(.16,1,.3,1), color .3s;
+}
+.mi .idx {
+  position: absolute; top: -8px; left: 0;
+  font-size: 9px; letter-spacing: .2em; color: var(--am-2);
+  transition: color .3s;
+}
+.menu:hover .mi { opacity: .34; }
+.menu .mi:hover, .menu .mi:focus-visible { opacity: 1; }
+.mi:hover .t2, .mi:focus-visible .t2 { color: var(--text); transform: translateX(4px); }
+.mi:hover .c2, .mi:focus-visible .c2 { opacity: 1; transform: none; color: var(--mg-1); }
+.mi:hover .idx, .mi:focus-visible .idx { color: var(--cyan); }
+.mi.on .t2 { color: var(--cy-1); }
+.mi:focus-visible { outline: none; }
+.mi:focus-visible .t2 { text-shadow: 0 0 14px rgba(0,240,255,.5); }
+
+/* ── Mobile ───────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  body { overflow-y: auto; overflow-x: hidden; }
+
+  /* Flatten the grid to one column and let the columns' children become
+     direct flex items, so each module can be ordered independently. */
+  .hud {
+    display: flex; flex-direction: column;
+    height: auto; min-height: 100svh;
+    gap: 24px; padding: 16px 18px 44px;
+  }
+  .col { display: contents; }
+
+  .strip         { order: 1; padding-bottom: 12px; flex-wrap: wrap; gap: 10px 14px; }
+  .tape          { flex: 1 0 100%; margin-left: 0; order: 3; }
+  .strip .spacer { display: none; }
+  .ident         { order: 2; margin: 0; }
+  .field         { order: 3; height: 44vh; min-height: 290px; }
+  .menu          { order: 4; }
+  .mod--vitals   { order: 5; }
+  .mod--operator { order: 6; }
+  .clk           { order: 7; text-align: left; }
+  .mod--log      { order: 8; }
+  .mod + .mod { margin-top: 0; }
+
+  /* Type sized for a phone rather than a 1600px cockpit */
+  .ident .n  { font-size: 46px; }
+  .ident .r  { font-size: 11px; letter-spacing: .15em; margin-top: 14px; line-height: 1.95; }
+  .h         { font-size: 10px; letter-spacing: .2em; padding-left: 12px; }
+  .kv        { font-size: 11px; padding: 8px 0 8px 12px; gap: 14px; }
+  .clk .big  { font-size: 38px; }
+  .clk .l    { font-size: 10px; }
+  .f-tag     { font-size: 10px; }
+  .ln        { font-size: 10px; line-height: 1.6; }
+  #wave      { height: 62px; }
+
+  /* Menu becomes a stacked list, captions always shown */
+  .menu { flex-direction: column; gap: 0; padding-top: 14px; }
+  .mi { flex: none; padding: 13px 0; border-bottom: 1px solid var(--line-lo); }
+  .mi .t2 { font-size: 23px; }
+  .mi .c2 { opacity: 1; transform: none; margin-top: 4px; font-size: 10px; }
+  .mi .idx { position: static; display: block; margin-bottom: 6px; font-size: 10px; }
+  .menu:hover .mi { opacity: 1; }
+  .menu-scan { display: none; }
+
+  /* Log gets a bounded height instead of trying to fill a flex column */
+  .logmod { flex: none; }
+  .log { max-height: 220px; padding-left: 12px; }
+
+  /* The status line stays on a phone, just tighter. Only the
+     widest desktop-only bits still drop out. */
+  .build.hide-s { display: block; font-size: 8px; letter-spacing: .14em; }
+  .hide-s { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+  .glitch::before, .glitch::after { display: none; }
+}
+
+/* ── Cross-page transitions ──────────────────────────────────
+   Chromium/Safari get a short CRT settle. Firefox simply
+   navigates, deliberately with no JS fallback: a scripted
+   fade is exactly what leaves a page stuck when the back
+   button restores it mid-animation.
+   ─────────────────────────────────────────────────────────── */
+@view-transition { navigation: auto; }
+.strip { view-transition-name: hud-strip; }
+.menu  { view-transition-name: hud-menu; }
+/* Content crossfades with a slight drift and a CRT bloom on the way
+   out. The named chrome below is pinned so the bar and the menu hold
+   perfectly still while the page beneath them changes. */
+::view-transition-old(root) { animation: vt-out .26s cubic-bezier(.4, 0, 1, 1) both; }
+::view-transition-new(root) { animation: vt-in  .46s cubic-bezier(.16, 1, .3, 1) both; }
+@keyframes vt-out {
+  to { opacity: 0; transform: translateY(-10px) scale(.986); filter: blur(3px) brightness(1.5); }
+}
+@keyframes vt-in {
+  from { opacity: 0; transform: translateY(16px) scale(1.014); filter: blur(5px) brightness(1.35); }
+}
+::view-transition-old(hud-strip), ::view-transition-new(hud-strip),
+::view-transition-old(hud-menu),  ::view-transition-new(hud-menu) {
+  animation: none; mix-blend-mode: normal;
+}
+::view-transition-group(hud-strip), ::view-transition-group(hud-menu) { animation-duration: .3s; }
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
+}
+
+/* ── Page shell for the scrolling inner pages ──────────────── */
+body.page { overflow-y: auto; overflow-x: hidden; }
+.page .hud {
+  height: auto; min-height: 100svh;
+  display: flex; flex-direction: column;
+  gap: 0; padding: 18px 30px 0;
+  /* Chrome and content share one centred column. Left-aligning the
+     sheet under full-bleed chrome dumped all the slack on the right. */
+  max-width: 1460px; margin: 0 auto;
+}
+.page .strip { position: sticky; top: 0; z-index: 40; background: var(--bg); }
+.sheet { flex: 1; padding: 34px 0 96px; width: 100%; }
+.page .menu { position: sticky; bottom: 0; background: var(--bg); z-index: 40; margin-top: auto; }
+
+/* page identity block */
+.phead { padding: 8px 0 30px; }
+.phead .n {
+  font-family: 'Chakra Petch', sans-serif; font-weight: 700;
+  font-size: clamp(38px, 6vw, 84px); line-height: .86;
+  letter-spacing: -.03em; color: var(--ink); text-transform: uppercase;
+}
+.phead .r { font-size: 10px; letter-spacing: .2em; color: var(--am-1); margin-top: 16px; }
+.phead .r i { font-style: normal; color: var(--cy-1); }
+
+/* content modules */
+.sheet .mod { margin-top: 46px; }
+.sheet .mod:first-child { margin-top: 0; }
+.mod + .mod { margin-top: 46px; }
+.body {
+  font-size: 13px; line-height: 2; letter-spacing: .04em;
+  color: var(--cy-2); text-transform: none; padding-left: 14px; max-width: 74ch;
+}
+.body + .body { margin-top: 16px; }
+.body b { color: var(--ink); font-weight: 400; }
+.body em { font-style: normal; color: var(--lm-1); }
+.body u  { text-decoration: none; color: var(--mg-1); }
+
+.tags { display: flex; flex-wrap: wrap; gap: 7px; padding-left: 14px; margin-top: 20px; }
+.tag {
+  font-size: 9px; letter-spacing: .2em; color: var(--cy-2);
+  border: 1px solid var(--line-lo); padding: 5px 11px;
+  transition: color .2s, border-color .2s, transform .2s;
+}
+.tag:hover { color: var(--cy-1); border-color: var(--line); transform: translateY(-1px); }
+
+.list { padding-left: 14px; list-style: none; }
+.list li {
+  font-size: 13px; line-height: 1.95; letter-spacing: .04em;
+  color: var(--cy-2); text-transform: none; padding-left: 20px;
+  position: relative; margin-bottom: 12px;
+}
+.list li::before { content: '▸'; position: absolute; left: 0; color: var(--cy-1); }
+.list li b { color: var(--ink); font-weight: 400; }
+
+/* ── Mobile overrides for the scrolling pages ────────────────
+   Declared after the .page shell above so they actually win:
+   equal specificity means source order decides. On a phone the
+   menu is a ~240px stacked list, so sticking it to the bottom
+   would swallow most of the screen. Let it end the document.
+   ─────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .page .hud { padding: 16px 18px 0; }
+  .page .sheet { padding: 22px 0 40px; }
+  .page .menu { position: static; }
+  .phead .n { font-size: clamp(34px, 12vw, 52px); }
+  .phead .r { font-size: 10px; letter-spacing: .16em; }
+  .body { font-size: 12px; line-height: 1.95; padding-left: 12px; }
+  .list li { font-size: 12px; }
+  .tags { padding-left: 12px; }
+}

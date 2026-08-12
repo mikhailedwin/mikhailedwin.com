@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MIKHAIL EDWIN // PROJECTS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="hud.css?v=9">
+<style>
+  .case { display: grid; grid-template-columns: minmax(300px, 380px) minmax(0, 1fr); gap: 46px; align-items: start; padding-left: 14px; }
+  .case .body, .case .tags { padding-left: 0; }
+  .viz { position: relative; border: 1px solid var(--line-lo); background: rgba(0,0,0,.32); }
+  .viz canvas { display: block; width: 100%; height: auto; }
+  .viz .cap { position: absolute; left: 9px; bottom: 7px; font-size: 8px; letter-spacing: .2em; color: var(--cy-2); pointer-events: none; }
+  .meta { display: flex; align-items: center; gap: 16px; }
+  .sig { display: flex; gap: 3px; align-items: flex-end; height: 14px; }
+  .sig i { width: 3px; background: var(--line); transition: background .3s, box-shadow .3s; }
+  .sig i:nth-child(1){height:3px} .sig i:nth-child(2){height:6px} .sig i:nth-child(3){height:9px}
+  .sig i:nth-child(4){height:11px} .sig i:nth-child(5){height:14px}
+  .sig i.on { background: var(--lm-1); box-shadow: 0 0 6px var(--lm-1); }
+  .redact { display: flex; gap: 18px; padding: 6px 0 6px 14px; font-size: 11px; border-bottom: 1px solid rgba(0,240,255,.045); }
+  .redact .k { color: var(--cy-2); min-width: 78px; font-size: 9px; letter-spacing: .2em; }
+  .redact .v { color: var(--mg-2); letter-spacing: 1px; transition: color .2s; }
+  .redact:hover .v { color: var(--mg-1); }
+  .slot { position: relative; margin-top: 20px; margin-left: 14px; border: 1px dashed var(--line-lo); padding: 34px; overflow: hidden; text-align: center; }
+  .slot canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .slot span { position: relative; font-size: 10px; letter-spacing: .28em; color: var(--cy-2); }
+  .slot span::after { content: '_'; color: var(--lm-1); animation: blink 1s step-end infinite; }
+  a.card { display: block; text-decoration: none; color: inherit; }
+  a.card:focus-visible { outline: 1px solid var(--cy-1); outline-offset: 6px; }
+  @media (max-width: 900px) {
+    .case { grid-template-columns: 1fr; gap: 24px; padding-left: 12px; }
+    .body, .list li { font-size: 12px; }
+  }
+</style>
+</head>
+<body class="page">
+
+<div class="hud">
+
+  <header class="strip">
+    <span class="mark"><img src="favicon.svg" alt="Mikhail Edwin" width="22" height="19"></span>
+    <span class="build hide-s"><i class="pip"></i>PROJECTS / <em>2 FILES</em></span>
+    <span class="spacer"></span>
+  </header>
+
+  <div class="sheet">
+
+    <div class="phead">
+      <div class="n">
+        <span class="glitch" data-text="PROJECTS">PROJECTS</span>
+      </div>
+      <div class="r">ACTIVE BUILDS <i>/</i> CONCEPT WORK <i>/</i> SIGNALS WORTH AMPLIFYING</div>
+    </div>
+
+    <!-- ERID -->
+    <div class="mod">
+      <div class="h">
+        <span>FILE 001 // FEATURED BUILD</span>
+        <b class="meta">CONCEPT / PRE-SEED <span class="sig" id="sig"><i></i><i></i><i></i><i></i><i></i></span></b>
+      </div>
+
+      <a class="card" href="https://calledex.mikhailedwin.com" target="_blank" rel="noopener">
+        <div class="case">
+          <div class="viz">
+            <canvas id="schem" width="420" height="420"></canvas>
+            <div class="cap">LIVE SCHEMATIC // HK GRID</div>
+          </div>
+          <div>
+            <div class="h" style="margin-bottom:14px"><span>PROJECT.ERID</span><b>OPEN &rarr;</b></div>
+            <p class="body"><b>Problem.</b> Static advertising is broken. Billboards and bus panels deliver impressions, not engagement; brands pay for eyeballs that <u>never stop</u>. Meanwhile, public service touchpoints remain clunky, understaffed, and underused.</p>
+            <p class="body"><b>Solution.</b> A network of <em>AI-powered humanoid avatar displays</em> across high-footfall public surfaces. Passersby interact in natural language with a lifelike virtual agent that answers brand questions, runs promotions, delivers government services, and captures real-time intent data.</p>
+            <p class="body"><b>Edge.</b> Advertisers get measurable engagement, not just reach. Governments get a scalable service layer at street level. We're starting in <em>Hong Kong</em>, a city with the density, infrastructure, and appetite for this to work from day one.</p>
+            <div class="tags">
+              <span class="tag">AI / LLM</span>
+              <span class="tag">DIGITAL.OOH</span>
+              <span class="tag">SMART.CITY</span>
+              <span class="tag">HUMANOID.AVATAR</span>
+              <span class="tag">CIVIC.TECH</span>
+              <span class="tag">HK.FIRST</span>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <!-- MONEYBALL -->
+    <div class="mod">
+      <div class="h"><span>FILE 002 // QUEUED</span><b class="dn">SIGNAL INCOMING</b></div>
+      <div class="h" style="margin:18px 0 12px"><span>PROJECT.MONEYBALL</span><b class="dn">CLASSIFIED</b></div>
+      <div class="redact"><span class="k">TARGET</span><span class="v">██████████████████</span></div>
+      <div class="redact"><span class="k">METHOD</span><span class="v">████████████</span></div>
+      <div class="redact"><span class="k">STATUS</span><span class="v">███████████████████████</span></div>
+      <div class="redact"><span class="k">ETA</span><span class="v">████████</span></div>
+      <p class="body" style="margin-top:16px;opacity:.62">// DETAILS PENDING TRANSMISSION</p>
+
+      <div class="slot">
+        <canvas id="static"></canvas>
+        <span>AWAITING SIGNAL </span>
+      </div>
+    </div>
+
+  </div>
+
+  <nav class="menu" id="menu">
+    <span class="menu-scan" id="scan"></span>
+    <a class="mi" href="index.html"><span class="idx">01</span><span class="t2">Nucleus</span><span class="c2">The living core</span></a>
+    <a class="mi" href="dossier.html"><span class="idx">02</span><span class="t2">Dossier</span><span class="c2">Background and doctrine</span></a>
+    <a class="mi on" href="#"><span class="idx">03</span><span class="t2">Projects</span><span class="c2">You are here</span></a>
+    <a class="mi" href="https://linkedin.com/in/mikhailedwin" target="_blank" rel="noopener"><span class="idx">04</span><span class="t2">Contact</span><span class="c2">Open the uplink</span></a>
+  </nav>
+
+</div>
+
+<script src="hud-nav.js?v=5"></script>
+<script>
+(function () {
+  'use strict';
+  var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var QRN = [], qi = 0;
+  function qrand() { return QRN.length ? QRN[qi++ % QRN.length] : Math.random(); }
+  fetch('quantum_rng.json?w=' + Math.floor(Date.now() / 6048e5))
+    .then(function (r) { return r.json(); })
+    .then(function (d) { if (d.values && d.values.length) QRN = d.values; })
+    .catch(function () {});
+
+  /* ── ERID schematic: quantum-seeded Hong Kong street grid ── */
+  (function () {
+    var cv = document.getElementById('schem');
+    if (!cv) return;
+    var c = cv.getContext('2d'), W = cv.width, H = cv.height;
+    var nodes = [], edges = [];
+    for (var i = 0; i < 16; i++) {
+      nodes.push({ x: 30 + qrand() * (W - 60), y: 30 + qrand() * (H - 60),
+                   r: 2 + qrand() * 2.5, ph: qrand() * 6.28, sp: .8 + qrand() * 1.6 });
+    }
+    nodes.forEach(function (a, ai) {
+      var d = nodes.map(function (b, bi) { return { i: bi, d: Math.abs(a.x-b.x) + Math.abs(a.y-b.y) }; })
+        .filter(function (e) { return e.i !== ai; }).sort(function (p, q) { return p.d - q.d; });
+      for (var k = 0; k < 2; k++) {
+        var bi = d[k].i;
+        if (!edges.some(function (e) { return (e.a===ai&&e.b===bi)||(e.a===bi&&e.b===ai); })) edges.push({ a: ai, b: bi });
+      }
+    });
+    var last = null;
+    document.addEventListener('visibilitychange', function () { last = null; });
+    function draw(ts) {
+      if (!last) last = ts;
+      last = ts;
+      c.clearRect(0, 0, W, H);
+      c.strokeStyle = 'rgba(0,240,255,.05)'; c.lineWidth = 1;
+      for (var g = 30; g < W; g += 36) {
+        c.beginPath(); c.moveTo(g, 0); c.lineTo(g, H); c.stroke();
+        c.beginPath(); c.moveTo(0, g); c.lineTo(W, g); c.stroke();
+      }
+      c.strokeStyle = 'rgba(0,240,255,.18)';
+      edges.forEach(function (e) {
+        var a = nodes[e.a], b = nodes[e.b];
+        c.beginPath(); c.moveTo(a.x, a.y); c.lineTo(b.x, a.y); c.lineTo(b.x, b.y); c.stroke();
+      });
+      var t = ts / 1000;
+      nodes.forEach(function (n) {
+        var pulse = RM ? .5 : (Math.sin(t * n.sp + n.ph) + 1) / 2;
+        c.fillStyle = 'rgba(0,240,255,' + (.35 + pulse * .45) + ')';
+        c.shadowColor = '#00f0ff'; c.shadowBlur = 6;
+        c.beginPath(); c.arc(n.x, n.y, n.r + pulse * 2, 0, 6.28); c.fill();
+        c.shadowBlur = 0;
+      });
+      if (!RM) requestAnimationFrame(draw);
+    }
+    requestAnimationFrame(draw);
+  })();
+
+  /* ── Signal meter rises on load ──────────────────────────── */
+  (function () {
+    var m = document.getElementById('sig');
+    if (!m) return;
+    [].slice.call(m.children).forEach(function (b, i) {
+      setTimeout(function () { b.classList.add('on'); }, 400 + i * 380);
+    });
+  })();
+
+  /* ── Redacted rows corrupt on hover, never reveal ────────── */
+  (function () {
+    var G = '█▓▒░';
+    document.querySelectorAll('.redact .v').forEach(function (el) {
+      var orig = el.textContent;
+      el.parentElement.addEventListener('mouseenter', function () {
+        if (el._busy || RM) return;
+        el._busy = true;
+        var n = 0, id = setInterval(function () {
+          var o = '';
+          for (var i = 0; i < orig.length; i++) o += G[Math.floor(Math.random() * G.length)];
+          el.textContent = o;
+          if (++n >= 6) { clearInterval(id); el.textContent = orig; el._busy = false; }
+        }, 50);
+      });
+    });
+  })();
+
+  /* ── Dead channel static ─────────────────────────────────── */
+  (function () {
+    var cv = document.getElementById('static');
+    if (!cv) return;
+    var c = cv.getContext('2d');
+    function size() { cv.width = cv.clientWidth; cv.height = cv.clientHeight; }
+    size(); addEventListener('resize', size);
+    function frame() {
+      var W = cv.width, H = cv.height;
+      c.clearRect(0, 0, W, H);
+      c.fillStyle = 'rgba(0,240,255,.06)';
+      var n = Math.floor(W * H / 900);
+      for (var i = 0; i < n; i++) c.fillRect(Math.random() * W, Math.random() * H, 1.5, 1.5);
+    }
+    frame();
+    if (!RM) setInterval(frame, 125);
+  })();
+})();
+</script>
+<script src="hud-glitch.js?v=5"></script>
+</body>
+</html>

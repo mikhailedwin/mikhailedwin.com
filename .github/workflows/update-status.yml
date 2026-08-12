@@ -1,0 +1,31 @@
+name: status-sync
+
+on:
+  schedule:
+    - cron: '0 16 */2 * *'
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: claude/f00f
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: fetch github activity
+        run: python scripts/update_status.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: commit status
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add status.json
+          git diff --cached --quiet || git commit -m 'signal.refresh // status.uplink'
+          git push origin claude/f00f

@@ -1,0 +1,31 @@
+name: sentiment-sync
+
+on:
+  schedule:
+    - cron: '0 0 */2 * *'
+  workflow_dispatch:
+
+jobs:
+  sentiment:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: claude/f00f
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: install packages
+        run: pip install feedparser vaderSentiment
+      - name: score headlines
+        run: python scripts/update_sentiment.py
+      - name: commit sentiment
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add sentiment.json
+          git diff --cached --quiet || git commit -m 'sentiment.refresh // signal.scored'
+          git push origin claude/f00f

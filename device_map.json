@@ -1,0 +1,238 @@
+{
+  "iphone": [
+    {
+      "w": 440,
+      "h": 956,
+      "dpr": 3,
+      "model": "iPhone 16 Pro Max"
+    },
+    {
+      "w": 402,
+      "h": 874,
+      "dpr": 3,
+      "model": "iPhone 16 Pro"
+    },
+    {
+      "w": 430,
+      "h": 932,
+      "dpr": 3,
+      "ios_min": 18,
+      "model": "iPhone 16 Plus / 16 Pro Max"
+    },
+    {
+      "w": 430,
+      "h": 932,
+      "dpr": 3,
+      "ios_min": 17,
+      "model": "iPhone 15 Plus / 15 Pro Max"
+    },
+    {
+      "w": 430,
+      "h": 932,
+      "dpr": 3,
+      "ios_min": 16,
+      "model": "iPhone 14 Plus / 14 Pro Max"
+    },
+    {
+      "w": 430,
+      "h": 932,
+      "dpr": 3,
+      "model": "iPhone 14/15/16 Plus · Pro Max"
+    },
+    {
+      "w": 393,
+      "h": 852,
+      "dpr": 3,
+      "ios_min": 18,
+      "model": "iPhone 16 / 16 Pro"
+    },
+    {
+      "w": 393,
+      "h": 852,
+      "dpr": 3,
+      "ios_min": 17,
+      "model": "iPhone 15 / 15 Pro"
+    },
+    {
+      "w": 393,
+      "h": 852,
+      "dpr": 3,
+      "ios_min": 16,
+      "model": "iPhone 14 Pro"
+    },
+    {
+      "w": 393,
+      "h": 852,
+      "dpr": 3,
+      "model": "iPhone 14/15/16 Pro"
+    },
+    {
+      "w": 390,
+      "h": 844,
+      "dpr": 3,
+      "ios_min": 16,
+      "model": "iPhone 14"
+    },
+    {
+      "w": 390,
+      "h": 844,
+      "dpr": 3,
+      "ios_min": 15,
+      "model": "iPhone 13 / 13 Pro"
+    },
+    {
+      "w": 390,
+      "h": 844,
+      "dpr": 3,
+      "ios_min": 14,
+      "model": "iPhone 12 / 12 Pro"
+    },
+    {
+      "w": 390,
+      "h": 844,
+      "dpr": 3,
+      "model": "iPhone 12/13/14"
+    },
+    {
+      "w": 428,
+      "h": 926,
+      "dpr": 3,
+      "ios_min": 15,
+      "model": "iPhone 13 Pro Max"
+    },
+    {
+      "w": 428,
+      "h": 926,
+      "dpr": 3,
+      "ios_min": 14,
+      "model": "iPhone 12 Pro Max"
+    },
+    {
+      "w": 428,
+      "h": 926,
+      "dpr": 3,
+      "model": "iPhone 12/13 Pro Max"
+    },
+    {
+      "w": 375,
+      "h": 812,
+      "dpr": 3,
+      "ios_min": 15,
+      "model": "iPhone 13 Mini"
+    },
+    {
+      "w": 375,
+      "h": 812,
+      "dpr": 3,
+      "ios_min": 14,
+      "model": "iPhone 12 Mini"
+    },
+    {
+      "w": 375,
+      "h": 812,
+      "dpr": 3,
+      "ios_min": 13,
+      "model": "iPhone 11 Pro"
+    },
+    {
+      "w": 375,
+      "h": 812,
+      "dpr": 3,
+      "model": "iPhone X / XS / 11 Pro / Mini"
+    },
+    {
+      "w": 414,
+      "h": 896,
+      "dpr": 3,
+      "model": "iPhone XS Max / 11 Pro Max"
+    },
+    {
+      "w": 414,
+      "h": 896,
+      "dpr": 2,
+      "model": "iPhone XR / 11"
+    },
+    {
+      "w": 414,
+      "h": 736,
+      "dpr": 3,
+      "model": "iPhone 6 Plus / 7 Plus / 8 Plus"
+    },
+    {
+      "w": 375,
+      "h": 667,
+      "dpr": 2,
+      "ios_min": 15,
+      "model": "iPhone SE 3rd Gen"
+    },
+    {
+      "w": 375,
+      "h": 667,
+      "dpr": 2,
+      "ios_min": 13,
+      "model": "iPhone SE 2nd Gen"
+    },
+    {
+      "w": 375,
+      "h": 667,
+      "dpr": 2,
+      "model": "iPhone 6 / 7 / 8 / SE"
+    },
+    {
+      "w": 320,
+      "h": 568,
+      "dpr": 2,
+      "model": "iPhone SE 1st Gen / iPhone 5"
+    }
+  ],
+  "ipad": [
+    {
+      "w": 1032,
+      "h": 1376,
+      "dpr": 2,
+      "model": "iPad Pro 13-inch (M4)"
+    },
+    {
+      "w": 834,
+      "h": 1210,
+      "dpr": 2,
+      "model": "iPad Pro 11-inch (M4)"
+    },
+    {
+      "w": 1024,
+      "h": 1366,
+      "dpr": 2,
+      "model": "iPad Pro 12.9-inch / Air 13-inch"
+    },
+    {
+      "w": 834,
+      "h": 1194,
+      "dpr": 2,
+      "model": "iPad Pro 11-inch (M1/M2)"
+    },
+    {
+      "w": 820,
+      "h": 1180,
+      "dpr": 2,
+      "model": "iPad Air 4th/5th Gen / iPad 10th Gen"
+    },
+    {
+      "w": 810,
+      "h": 1080,
+      "dpr": 2,
+      "model": "iPad 7th / 8th / 9th Gen"
+    },
+    {
+      "w": 744,
+      "h": 1133,
+      "dpr": 2,
+      "model": "iPad Mini 6th Gen"
+    },
+    {
+      "w": 768,
+      "h": 1024,
+      "dpr": 2,
+      "model": "iPad Mini 4th/5th / iPad Air 2/3rd"
+    }
+  ]
+}

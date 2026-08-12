@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MIKHAIL EDWIN // DOSSIER</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="hud.css?v=9">
+<style>
+  .split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(360px, 440px); gap: 52px; align-items: start; }
+  .split .body { padding-left: 0; }
+  /* The profile table sat at 9px next to 13px prose and read as an
+     afterthought. Bring it up to match the column beside it. */
+  .split .kv { font-size: 11px; padding: 9px 0 9px 14px; }
+  .split .kv .k { font-size: 10px; letter-spacing: .18em; }
+  .kv .sub2 { color: var(--cy-2); font-size: 9px; letter-spacing: .14em; margin-left: auto; margin-right: 16px; opacity: .72; }
+
+  /* DOCTRINE carousel */
+  .carousel { position: relative; margin-left: 14px; }
+  .track {
+    display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
+    scroll-behavior: smooth; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  }
+  .track::-webkit-scrollbar { display: none; }
+  .doctrine-slide { flex: 0 0 100%; min-width: 100%; scroll-snap-align: center; padding-right: 2px;
+    opacity: .38; transform: scale(.985); transition: opacity .45s ease, transform .45s ease; }
+  .doctrine-slide.on { opacity: 1; transform: none; }
+  .dblock { border: 1px solid var(--line-lo); padding: 20px 22px 22px; position: relative; height: clamp(400px, 58vh, 580px); display: flex; flex-direction: column; }
+  .dblock::before { content: ''; position: absolute; top: -1px; left: -1px; width: 8px; height: 8px;
+    border-top: 1px solid var(--cyan); border-left: 1px solid var(--cyan); }
+  .doct {
+    flex: 1; overflow-y: auto; text-align: center;
+    font-size: 13px; line-height: 2.05; letter-spacing: .04em;
+    color: var(--cy-2); text-transform: none;
+    scrollbar-width: thin; scrollbar-color: var(--line-lo) transparent;
+  }
+  .doct::-webkit-scrollbar { width: 3px; }
+  .doct::-webkit-scrollbar-thumb { background: var(--line-lo); }
+  .doct p + p { margin-top: 17px; }
+
+  .h.gold span, .h.gold b { color: var(--am-1); }
+  .list li b { color: var(--am-1); font-weight: 400; }
+
+  /* Each principle carries its own accent so the four read as
+     four distinct voices rather than one long cyan block. */
+  .acc-cy .doct { color: var(--cy-2); }
+  .acc-cy .dblock::before, .acc-cy .dblock { border-color: rgba(0,240,255,.16); }
+  .acc-cy .h b { color: var(--cy-1); }
+  .acc-mg .doct { color: rgba(255,45,146,.78); }
+  .acc-mg .dblock { border-color: rgba(255,45,146,.16); }
+  .acc-mg .dblock::before { border-color: var(--magenta); }
+  .acc-mg .h b, .acc-mg .h span { color: var(--mg-1); }
+  .acc-am .doct { color: rgba(255,184,0,.80); }
+  .acc-am .dblock { border-color: rgba(255,184,0,.16); }
+  .acc-am .dblock::before { border-color: var(--amber); }
+  .acc-am .h b, .acc-am .h span { color: var(--am-1); }
+  .acc-lm .doct { color: rgba(193,255,58,.78); }
+  .acc-lm .dblock { border-color: rgba(193,255,58,.16); }
+  .acc-lm .dblock::before { border-color: var(--lime); }
+  .acc-lm .h b, .acc-lm .h span { color: var(--lm-1); }
+  .beam { height: 2px; margin-top: 16px; background: rgba(0,240,255,.08); overflow: hidden; }
+  .beam i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--cyan), var(--magenta)); box-shadow: 0 0 8px var(--cyan); transition: width .15s linear; }
+  .dots { display: flex; justify-content: center; gap: 11px; margin-top: 16px; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; border: none; padding: 0; background: var(--line); cursor: pointer;
+    transition: background .25s, transform .25s, box-shadow .25s; }
+  .dot.on { background: var(--cyan); transform: scale(1.45); box-shadow: 0 0 8px var(--cyan); }
+  .arw { position: absolute; top: 50%; transform: translateY(-50%); z-index: 5; width: 38px; height: 38px;
+    background: rgba(0,0,0,.6); border: 1px solid var(--line-lo); color: var(--cy-1);
+    font-family: 'JetBrains Mono', monospace; font-size: 20px; line-height: 1; cursor: pointer;
+    transition: border-color .2s, background .2s; }
+  .arw:hover { border-color: var(--cyan); background: rgba(0,240,255,.1); }
+  .arw.prev { left: -12px; } .arw.next { right: -12px; }
+  @media (max-width: 900px) {
+    .split { grid-template-columns: 1fr; gap: 26px; }
+    .arw { display: none; }
+    .carousel { margin-left: 12px; }
+    .doct { font-size: 12px; }
+  }
+</style>
+</head>
+<body class="page">
+
+<div class="hud">
+
+  <header class="strip">
+    <span class="mark"><img src="favicon.svg" alt="Mikhail Edwin" width="22" height="19"></span>
+    <span class="build hide-s"><i class="pip"></i>DOSSIER / <em>DECRYPTED</em></span>
+    <span class="spacer"></span>
+  </header>
+
+  <div class="sheet">
+
+    <div class="phead">
+      <div class="n"><span class="glitch" data-text="DOSSIER">DOSSIER</span></div>
+      <div class="r">OPERATOR BACKGROUND <i>/</i> TRAINING <i>/</i> CURRENT DEPLOYMENT</div>
+    </div>
+
+    <div class="mod">
+      <div class="h"><span>01 // PROFILE.SYS</span><b>ID 007</b></div>
+      <div class="split">
+        <div>
+<p class="body">I'm <em>Mikhail Edwin</em>, a business and financial analyst at a private equity advisory firm, currently based in <u>Hong Kong</u>.</p>
+        <p class="body">I hold a <em>BA in Philosophy</em> and a <em>Master of Public Health</em> specialising in Research Methods, both from the University of Sydney. That foundation sharpens how I approach complex problems: rigorous analytical thinking paired with structured, evidence-based methodology.</p>
+        <p class="body">In my current role, I support investment decisions and strategic advisory work, bringing quantitative rigour and clear-headed reasoning to everything I do. I thrive in <u>high-stakes, fast-moving environments</u> where precision and sound judgement matter.</p>
+        </div>
+        <div>
+      <div class="kv"><span class="k">EDUCATION /01</span><span class="sub2">USYD · 2021</span><span class="v c">BA PHILOSOPHY</span></div>
+      <div class="kv"><span class="k">EDUCATION /02</span><span class="sub2">USYD · 2024</span><span class="v c">MPH (RESEARCH METHODS)</span></div>
+      <div class="kv"><span class="k">DOMAIN</span><span class="sub2">FIN.ANALYSIS</span><span class="v c">PE ADVISORY</span></div>
+      <div class="kv"><span class="k">BASE</span><span class="sub2">22.28°N 114.18°E</span><span class="v c">HONG KONG</span></div>
+      <div class="kv"><span class="k">UPTIME</span><span class="sub2">SINCE 1999.07.02</span><span class="v t" id="dossier-uptime">---</span></div>
+      <div class="kv"><span class="k">SIG.SENTIMENT</span><span class="sub2">NET // VADER.MEAN</span><span class="v life" id="dossier-sent">---</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mod">
+      <div class="h"><span>02 // CAPABILITIES.ARR</span><b>CORE STACK</b></div>
+      <ul class="list">
+        <li><b>Financial analysis</b>: modelling, valuation, due diligence, deal screening.</li>
+        <li><b>Business advisory</b>: supporting investment decisions and strategic positioning for PE clients.</li>
+        <li><b>Research methodology</b>: structured, evidence-based frameworks for ambiguous problems.</li>
+        <li><b>Cross-cultural ops</b>: operating in English-Chinese environments across Hong Kong and broader APAC.</li>
+        <li><b>Analytical writing</b>: committed positions, defended with evidence, never hedged.</li>
+      </ul>
+    </div>
+
+    <div class="mod">
+      <div class="h gold"><span>03 // DOCTRINE.SYS</span><b>4 PRINCIPLES</b></div>
+      <div class="carousel">
+        <button class="arw prev" aria-label="Previous">&lsaquo;</button>
+        <div class="track" id="track">
+    <div class="doctrine-slide acc-cy"><div class="dblock">
+      <div class="h"><span>OPERATING.PRINCIPLES // I</span><b>01 / 04</b></div>
+      <div class="doct"><p>There will be times when the struggle seems impossible. I know this already.</p>
+        <p>And it'll happen to you too. You should know that going in. It's space. It's filled with chance, circumstance and bad luck. It doesn't cooperate.</p>
+        <p>At some point, I promise, at some point... every single thing is gonna go south on you, and you'll think: this is it. This is how I end.</p>
+        <p>And now you can either accept that... or you can get to work.</p>
+        <p>That's all it is. You simply begin... you do the math. Solve one problem.</p>
+        <p>Then the next one, then the next.</p>
+        <p>You solve enough problems... and you get to come home.</p>
+        <p>Remember this. Try.</p></div>
+    </div></div>
+    <div class="doctrine-slide acc-mg"><div class="dblock">
+      <div class="h"><span>OPERATING.PRINCIPLES // II</span><b>02 / 04</b></div>
+      <div class="doct"><p>Two Augusts henceforth<br>I will tell the truth<br>Oh, but you don't like it<br>You go home<br>You're in your Benz, I'm by the gate</p>
+        <p>Now I go alone<br>Charm all the people I train for<br>I mean, well, but aim low<br>And I'll make it known<br>Like I'm getting paid</p>
+        <p>That's just the way life goes<br>I like to slam doors closed<br>Trust me, I know it's always about me<br>I love you world, I'm sorry</p>
+        <p>Two summers from now<br>We'll have been talking<br>But not all that often<br>We're cool now<br>I'll be on a boat and you're on a plane<br>Going somewhere same</p>
+        <p>And I'll have a drink<br>Wistfully lean out my window<br>And watch the sun set on the lake<br>I might not feel real but it's okay<br>Mm</p>
+        <p>'Cause that's just the way life goes<br>I push my luck, it shows<br>Thankful you don't send someone to kill me<br>I love you world, I'm sorry</p>
+        <p>You are the best, but you are the worst<br>As sick as it sounds, I loved you first<br>I am a dick, it is what it is<br>A habit to kick, the age old curse<br>I tend to laugh whenever I'm sad<br>I stare at the crash, it actually works<br>Making amends<br>This shit never ends<br>I'm wrong again<br>Wrong again</p>
+        <p>The way life goes<br>Joyriding down our road<br>Lay on the horn<br>To prove that it haunts me<br>I love you world, I'm sorry</p>
+        <p>The way life goes<br>I wanna speak in code<br>Hope that I don't<br>Won't make it about me<br>I love you world, I'm sorry</p></div>
+    </div></div>
+    <div class="doctrine-slide acc-am"><div class="dblock">
+      <div class="h"><span>OPERATING.PRINCIPLES // III</span><b>03 / 04</b></div>
+      <div class="doct"><p>I didn't think you'd understand me<br>How could you ever even try?<br>I don't wanna tiptoe, but I don't wanna hide<br>But I don't wanna feed this monstrous fire<br>Just wanna let this story die<br>And I'll be alright</p>
+        <p>We can't be friends<br>But I'd like to just pre-etend<br>You cling to your papers and pens<br>Wait until you like me again<br>Wait for your love<br>My love, I'll wait for your love</p>
+        <p>Me and my truth, we sit in silence<br>Mmm, baby girl, it's just me and you<br>'Cause I don't wanna argue, but I don't wanna bite<br>My tongue, yeah, I think I'd rather die<br>You got me misunderstood<br>But at least I look this good</p>
+        <p>We can't be friends<br>But I'd like to just pre-etend<br>You cling to your papers and pens<br>Wait until you like me again<br>Wait for your love<br>My love, I'll wait for your love<br>I'll wait for your love<br>My love, I'll wait for your love</p>
+        <p>Know that you made me<br>I don't like how you paint me, yet I'm still here hanging<br>Not what you made me<br>It's something like a daydream<br>But I feel so seen in the night<br>So for now, it's only me<br>And maybe that's all I need</p>
+        <p>We can't be friends<br>But I'd like to just pre-etend<br>You cling to your papers and pens<br>Wait until you like me again<br>Wait for your love<br>My love, I'll wait for your love<br>I'll wait for your love<br>My love, I'll wait for your love</p>
+        <p>I'll wait for your love<br>I'll wait for your love<br>I'll wait for your love<br>I'll wait for your love<br>I'll wait for your love</p></div>
+    </div></div>
+    <div class="doctrine-slide acc-lm"><div class="dblock">
+      <div class="h"><span>OPERATING.PRINCIPLES // IV</span><b>04 / 04</b></div>
+      <div class="doct"><p>Ooh-ooh-ooh, ooh-ooh (ooh-ooh)<br>Ooh-ooh-ooh, ooh-ooh (ooh-ooh)<br>Ooh-ooh-ooh, ooh-ooh (ooh-ooh)<br>Ooh-ooh</p>
+        <p>You hit like a drunk cigarette<br>The feelin' amplified<br>By sayin' things I never meant, oh, yeah<br>I leave me filled with regret<br>At the end of the night<br>I always find myself wonderin' why, oh, yeah</p>
+        <p>Do you got plans for life?<br>'Cause I don't wanna just romance tonight<br>I wanna see myself in another light, oh, yeah<br>With rhythm, there is rhyme<br>With you, there always can be I<br>I wanna see myself in another light, ooh</p>
+        <p>I don't wanna talk down on your lover<br>I don't wanna be a world-wrecker<br>I just know I can be better, be better, be better<br>I don't wanna talk down on your lover<br>I don't wanna be a broken record<br>I just know I can be better, be better, be better</p>
+        <p>I sit on the fire escape<br>I talk and talk 'til dawn<br>I open up to you about my wrongs, oh, yeah<br>Then I lay and contemplate<br>Just one more round of love<br>Before I go home to another one</p>
+        <p>Do you got plans for life?<br>'Cause I don't wanna just romance tonight<br>I wanna see myself in another light, oh, yeah<br>With rhythm, there is rhyme<br>With you, there always can be I<br>I wanna see myself in another light, ooh</p>
+        <p>I don't wanna talk down on your lover<br>I don't wanna be a world-wrecker<br>I just know I can be better, be better, be better<br>I don't wanna talk down on your lover<br>I don't wanna be a broken record<br>I just know I can be better, be better, be better</p>
+        <p>I don't wanna be how you formulate opinions on life, oh no<br>Or to say we made peace<br>And then your friends don't even wanna talk to me, no more, no more<br>I wanna kiss you on the bed and on the floor<br>When I'm poor, when I'm bored<br>I am yours, I am yours, I am yours</p>
+        <p>I don't wanna talk down on your lover<br>I don't wanna be a world-wrecker<br>I just know I can be better, be better, be better<br>I don't wanna talk down on your lover<br>I don't wanna be a broken record<br>I just know I can be better, be better, be better</p>
+        <p>Ooh-ooh-ooh, ooh-ooh (ooh-ooh)<br>Ooh-ooh, ooh-ooh-ooh, ooh-ooh (ooh-ooh, ooh)<br>Ooh-ooh, ooh-ooh-ooh, ooh-ooh (ooh-ooh, ooh)<br>Ooh-ooh, ooh-ooh-ooh, ooh-ooh (ooh-ooh, ooh)</p></div>
+    </div></div>
+        </div>
+        <button class="arw next" aria-label="Next">&rsaquo;</button>
+        <div class="beam"><i id="beam"></i></div>
+        <div class="dots" id="dots"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <nav class="menu" id="menu">
+    <span class="menu-scan" id="scan"></span>
+    <a class="mi" href="index.html"><span class="idx">01</span><span class="t2">Nucleus</span><span class="c2">The living core</span></a>
+    <a class="mi on" href="#"><span class="idx">02</span><span class="t2">Dossier</span><span class="c2">You are here</span></a>
+    <a class="mi" href="projects.html"><span class="idx">03</span><span class="t2">Projects</span><span class="c2">What I am building</span></a>
+    <a class="mi" href="https://linkedin.com/in/mikhailedwin" target="_blank" rel="noopener"><span class="idx">04</span><span class="t2">Contact</span><span class="c2">Open the uplink</span></a>
+  </nav>
+
+</div>
+
+<script src="hud-nav.js?v=5"></script>
+<script>
+(function () {
+  'use strict';
+  var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var $ = function (i) { return document.getElementById(i); };
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  /* ── Live values in the profile table ────────────────────── */
+  var BIRTH = new Date('1999-07-02T09:15:00Z').getTime();
+  var up = $('dossier-uptime');
+  if (up) {
+    (function tick() {
+      var s = Math.floor((Date.now() - BIRTH) / 1000);
+      up.textContent = 'T+' + Math.floor(s / 3600).toLocaleString('en-US') + ':' + pad(s % 3600 / 60 | 0) + ':' + pad(s % 60);
+      setTimeout(tick, 1000);
+    })();
+  }
+  fetch('sentiment.json?t=' + Math.floor(Date.now() / 21600000))
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      var v = Object.keys(d).filter(function (k) { return k !== 'updated'; })
+        .map(function (k) { return d[k]; }).filter(function (n) { return typeof n === 'number'; });
+      if (!v.length) return;
+      var m = v.reduce(function (a, b) { return a + b; }, 0) / v.length;
+      var el = $('dossier-sent');
+      if (el) el.textContent = (m >= 0 ? '+' : '') + m.toFixed(3);
+    })
+    .catch(function () {});
+
+  /* ── DOCTRINE carousel ───────────────────────────────────── */
+  (function () {
+    var track = $('track');
+    if (!track) return;
+    var slides = [].slice.call(track.children);
+    var dots = $('dots'), beam = $('beam'), cur = 0;
+
+    slides.forEach(function (_, i) {
+      var b = document.createElement('button');
+      b.className = 'dot' + (i === 0 ? ' on' : '');
+      b.setAttribute('aria-label', 'Principle ' + (i + 1));
+      b.addEventListener('click', function () { go(i); });
+      dots.appendChild(b);
+    });
+    var dotEls = [].slice.call(dots.children);
+    slides[0].classList.add('on');
+
+    function go(i) {
+      i = Math.max(0, Math.min(slides.length - 1, i));
+      track.scrollTo({ left: i * track.clientWidth, behavior: RM ? 'auto' : 'smooth' });
+    }
+    function setActive(i) {
+      if (i === cur) return;
+      cur = i;
+      dotEls.forEach(function (d, n) { d.classList.toggle('on', n === i); });
+      slides.forEach(function (s, n) { s.classList.toggle('on', n === i); });
+    }
+    var raf;
+    track.addEventListener('scroll', function () {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(function () {
+        setActive(Math.max(0, Math.min(slides.length - 1, Math.round(track.scrollLeft / track.clientWidth))));
+        var max = track.scrollWidth - track.clientWidth;
+        beam.style.width = (max > 0 ? track.scrollLeft / max * 100 : 0) + '%';
+      });
+    });
+    document.querySelector('.arw.prev').addEventListener('click', function () { go(cur - 1); });
+    document.querySelector('.arw.next').addEventListener('click', function () { go(cur + 1); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowLeft') go(cur - 1);
+      else if (e.key === 'ArrowRight') go(cur + 1);
+    });
+
+    /* ── Per-line binary corruption, <br> structure preserved ── */
+    if (RM) return;
+    var NOISE = '01100101001101\u2588\u2593\u259101\u259210';
+    function binWord(w) {
+      var n = Math.max(4, Math.min(w.length, 8)), o = '';
+      for (var i = 0; i < n; i++) o += (Math.random() > .5 ? '1' : '0');
+      return o;
+    }
+    function corrupt(line, mode) {
+      if (!line.trim()) return line;
+      if (mode === 'char') {
+        var ch = line.split(''), hits = 1 + Math.floor(Math.random() * 3);
+        for (var n = 0; n < hits; n++) {
+          var p = Math.floor(Math.random() * ch.length);
+          if (ch[p].trim()) ch[p] = NOISE[Math.floor(Math.random() * NOISE.length)];
+        }
+        return ch.join('');
+      }
+      var tk = line.split(/(\s+)/), idx = [];
+      tk.forEach(function (t, i) { if (t.trim()) idx.push(i); });
+      if (!idx.length) return line;
+      var c = idx[Math.floor(Math.random() * idx.length)];
+      tk[c] = binWord(tk[c]);
+      return tk.join('');
+    }
+    function burst(el, html) {
+      if (el._busy) return;
+      el._busy = true;
+      var parts = html.split(/<br\s*\/?>/i);
+      var mode = Math.random() < .5 ? 'char' : 'word';
+      var li = Math.floor(Math.random() * parts.length);
+      var n = 0, total = 4 + Math.floor(Math.random() * 5);
+      var id = setInterval(function () {
+        var lines = parts.slice();
+        lines[li] = corrupt(lines[li], mode);
+        el.innerHTML = lines.join('<br>');
+        el.style.opacity = Math.random() > .15 ? '1' : '.1';
+        if (++n >= total) {
+          clearInterval(id);
+          el.innerHTML = html; el.style.opacity = ''; el._busy = false;
+        }
+      }, 42 + Math.random() * 58);
+    }
+    document.querySelectorAll('.doct p').forEach(function (el) {
+      (function schedule() {
+        setTimeout(function () { burst(el, el.innerHTML); schedule(); }, 2600 + Math.random() * 7200);
+      })();
+    });
+  })();
+})();
+</script>
+<script src="hud-glitch.js?v=5"></script>
+</body>
+</html>
