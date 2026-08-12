@@ -1451,14 +1451,47 @@
     }
     reset(ca);
 
-    /* ── Dissolution, then one upscale ─────────────────────
-       The instrument fades out under the geometry, and the whole
-       composite lands in a single full-resolution draw. */
+    /* ── Feather to nothing before the edge ────────────────
+       Everything above works on whole rectangles, and a whole
+       rectangle on a canvas that does not span the page is a box.
+       That is what turns the effect into a video playing in a frame
+       instead of something happening to the page. So the composite
+       is masked to an ellipse that reaches zero well inside the
+       canvas, and the darkening that sells the dissolution is a
+       matching gradient rather than a flat fill. Nothing the bloom
+       draws is allowed to touch an edge. */
+    // Scaling by bh/bw turns a circle of radius bw/2 into an ellipse that
+    // touches all four edges at once, so the fade reaches zero just before
+    // the nearest edge rather than somewhere past the corners.
+    var fr = bw * .5;
+    ca.setTransform(1, 0, 0, 1, 0, 0);
+    ca.globalCompositeOperation = 'destination-in';
+    ca.save();
+    ca.translate(bw * .5, bh * .5);
+    ca.scale(1, bh / bw);
+    var vg = ca.createRadialGradient(0, 0, fr * .34, 0, 0, fr * .97);
+    vg.addColorStop(0, 'rgba(0,0,0,1)');
+    vg.addColorStop(.62, 'rgba(0,0,0,.92)');
+    vg.addColorStop(1, 'rgba(0,0,0,0)');
+    ca.fillStyle = vg;
+    ca.fillRect(-bw, -bh, bw * 2, bh * 2);
+    ca.restore();
+    reset(ca);
+
+    /* ── Dissolution, then one upscale ───────────────────── */
     c.save();
     c.globalCompositeOperation = 'source-over';
-    c.fillStyle = 'rgba(0,0,0,' + (I * .55).toFixed(3) + ')';
-    c.fillRect(0, 0, W, H);
-    c.globalCompositeOperation = 'source-over';
+    var dr = W * .5;
+    c.save();
+    c.translate(W * .5, H * .5);
+    c.scale(1, H / W);
+    var dg = c.createRadialGradient(0, 0, dr * .34, 0, 0, dr * .97);
+    dg.addColorStop(0, 'rgba(0,0,0,' + (I * .62).toFixed(3) + ')');
+    dg.addColorStop(.62, 'rgba(0,0,0,' + (I * .48).toFixed(3) + ')');
+    dg.addColorStop(1, 'rgba(0,0,0,0)');
+    c.fillStyle = dg;
+    c.fillRect(-W, -H, W * 2, H * 2);
+    c.restore();
     c.globalAlpha = Math.min(1, I * 1.1);
     c.drawImage(pbufA, 0, 0, bw, bh, 0, 0, W, H);
     c.restore();
