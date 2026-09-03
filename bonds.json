@@ -1,24 +1,24 @@
 {
- "generated": "2026-09-01T10:45:04Z",
+ "generated": "2026-09-03T10:19:03Z",
  "rows": [
   {
    "sym": "US3Y",
    "asof": "08/31/2026",
-   "stale": false,
+   "stale": true,
    "val": 4.4,
    "chg": -0.01
   },
   {
    "sym": "US5Y",
    "asof": "08/31/2026",
-   "stale": false,
+   "stale": true,
    "val": 4.49,
    "chg": 0.01
   },
   {
    "sym": "US10Y",
    "asof": "08/31/2026",
-   "stale": false,
+   "stale": true,
    "val": 4.75,
    "chg": 0.02
   }
