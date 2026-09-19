@@ -1,26 +1,26 @@
 {
- "generated": "2026-09-17T10:39:15Z",
+ "generated": "2026-09-19T09:56:30Z",
  "rows": [
   {
    "sym": "US3Y",
-   "asof": "09/16/2026",
+   "asof": "09/18/2026",
    "stale": false,
-   "val": 4.82,
-   "chg": 0.06
+   "val": 4.83,
+   "chg": 0.08
   },
   {
    "sym": "US5Y",
-   "asof": "09/16/2026",
+   "asof": "09/18/2026",
    "stale": false,
    "val": 4.86,
-   "chg": 0.03
+   "chg": 0.08
   },
   {
    "sym": "US10Y",
-   "asof": "09/16/2026",
+   "asof": "09/18/2026",
    "stale": false,
    "val": 5.01,
-   "chg": 0.01
+   "chg": 0.07
   }
  ]
 }
